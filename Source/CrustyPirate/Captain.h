@@ -48,6 +48,9 @@ public:
 	UPaperZDAnimSequence* AttackAnimSequence;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPaperZDAnimSequence* AirAttackAnimSequence;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UInputAction* JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

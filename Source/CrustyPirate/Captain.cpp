@@ -110,9 +110,15 @@ void ACaptain::attack(const FInputActionValue& value) {
 		canAttack = false;
 		canMove = false;
 
-		GetAnimInstance()->PlayAnimationOverride(
-			AttackAnimSequence, FName("AttackSlot"), 1, 0, OnAttackOverrideEndDelegate
-		);
+		if (GetVelocity().Z != 0) {
+			GetAnimInstance()->PlayAnimationOverride(
+				AirAttackAnimSequence, FName("AttackSlot"), 1, 0, OnAttackOverrideEndDelegate
+			);
+		} else {
+			GetAnimInstance()->PlayAnimationOverride(
+				AttackAnimSequence, FName("AttackSlot"), 1, 0, OnAttackOverrideEndDelegate
+			);
+		}
 	}
 }
 
