@@ -111,13 +111,20 @@ void ACaptain::attack(const FInputActionValue& value) {
 		canMove = false;
 
 		if (GetVelocity().Z != 0) {
-			GetAnimInstance()->PlayAnimationOverride(
-				AirAttackAnimSequence, FName("AttackSlot"), 1, 0, OnAttackOverrideEndDelegate
-			);
+			auto animation = ((float)rand() / RAND_MAX) > 0.5f ? AirAttackAnimSequence : AirAttack2AnimSequence;
+			GetAnimInstance()->PlayAnimationOverride(animation, FName("AttackSlot"), 1, 0, OnAttackOverrideEndDelegate);
 		} else {
-			GetAnimInstance()->PlayAnimationOverride(
-				AttackAnimSequence, FName("AttackSlot"), 1, 0, OnAttackOverrideEndDelegate
-			);
+			auto animation = [&] {
+				float index = (float)rand() / RAND_MAX;
+				if (index < 0.333f) {
+					return AttackAnimSequence;
+				} else if (index < 0.667f) {
+					return Attack2AnimSequence;
+				} else {
+					return Attack3AnimSequence;
+				}
+			}();
+			GetAnimInstance()->PlayAnimationOverride(animation, FName("AttackSlot"), 1, 0, OnAttackOverrideEndDelegate);
 		}
 	}
 }

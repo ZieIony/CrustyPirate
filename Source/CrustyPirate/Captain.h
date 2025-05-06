@@ -44,11 +44,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UInputAction* AttackAction;
 
+#pragma region animations
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPaperZDAnimSequence* AttackAnimSequence;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPaperZDAnimSequence* Attack2AnimSequence;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPaperZDAnimSequence* Attack3AnimSequence;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPaperZDAnimSequence* AirAttackAnimSequence;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPaperZDAnimSequence* AirAttack2AnimSequence;
+#pragma endregion
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UInputAction* JumpAction;
