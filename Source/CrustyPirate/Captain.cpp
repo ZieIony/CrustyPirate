@@ -38,7 +38,7 @@ void ACaptain::BeginPlay() {
 
 	MyGameInstance = Cast<UMyGameInstance>(GetGameInstance());
 	if (MyGameInstance) {
-		hitPoints = MyGameInstance->PlayerHP;
+		currentHitPoints = MyGameInstance->PlayerHP;
 		if (MyGameInstance->IsDoubleJumpUnlocked) {
 			unlockDoubleJump();
 		}
@@ -48,7 +48,7 @@ void ACaptain::BeginPlay() {
 		PlayerHUDWidget = CreateWidget<UPlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0), PlayerHUDClass);
 		if (PlayerHUDWidget) {
 			PlayerHUDWidget->AddToPlayerScreen();
-			PlayerHUDWidget->setHP(hitPoints);
+			PlayerHUDWidget->setHP(currentHitPoints);
 			PlayerHUDWidget->setDiamonds(MyGameInstance->CollectedDiamondCount);
 			PlayerHUDWidget->setLevel(MyGameInstance->CurrentLevelIndex);
 		}
@@ -78,9 +78,13 @@ void ACaptain::SetupPlayerInputComponent(UInputComponent* playerInputComponent) 
 	}
 }
 
+bool ACaptain::getIsAlive() {
+	return currentHitPoints > 0;
+}
+
 void ACaptain::move(const FInputActionValue& value) {
 	float moveActionValue = value.Get<float>();
-	if (isAlive && canMove && !isStunned) {
+	if (getIsAlive() && canMove && !isStunned) {
 		FVector dir = { 1,0,0 };
 		AddMovementInput(dir, moveActionValue);
 		updateDirection(moveActionValue);
@@ -97,7 +101,7 @@ void ACaptain::updateDirection(float moveDirection) {
 }
 
 void ACaptain::jumpStarted(const FInputActionValue& value) {
-	if (isAlive && canMove && !isStunned)
+	if (getIsAlive() && canMove && !isStunned)
 		Jump();
 }
 
@@ -106,7 +110,7 @@ void ACaptain::jumpEnded(const FInputActionValue& value) {
 }
 
 void ACaptain::attack(const FInputActionValue& value) {
-	if (isAlive && canAttack && !isStunned) {
+	if (getIsAlive() && canAttack && !isStunned) {
 		canAttack = false;
 		canMove = false;
 
@@ -130,7 +134,7 @@ void ACaptain::attack(const FInputActionValue& value) {
 }
 
 void ACaptain::onAttackOverrideAnimEnd(bool completed) {
-	if (isActive && isAlive) {
+	if (isActive && getIsAlive()) {
 		canAttack = true;
 		canMove = true;
 	}
@@ -154,14 +158,13 @@ void ACaptain::EnableAttackCollisionBox(bool enable) {
 }
 
 void ACaptain::takeDamage(int damageAmount, float stunDuration) {
-	if (!isAlive || !isActive)
+	if (!getIsAlive() || !isActive)
 		return;
 
 	EnableAttackCollisionBox(false);
-	updateHP(std::max(0, hitPoints - damageAmount));
+	updateHP(std::max(0, currentHitPoints - damageAmount));
 
-	if (hitPoints == 0) {
-		isAlive = false;
+	if (currentHitPoints == 0) {
 		canMove = false;
 		canAttack = false;
 
@@ -176,10 +179,10 @@ void ACaptain::takeDamage(int damageAmount, float stunDuration) {
 }
 
 void ACaptain::updateHP(int newHP) {
-	hitPoints = newHP;
-	MyGameInstance->setPlayerHP(hitPoints);
+	currentHitPoints = newHP;
+	MyGameInstance->setPlayerHP(currentHitPoints);
 	if (PlayerHUDWidget) {
-		PlayerHUDWidget->setHP(hitPoints);
+		PlayerHUDWidget->setHP(currentHitPoints);
 	}
 }
 
@@ -201,21 +204,28 @@ void ACaptain::onRestartTimerTimeout() {
 	MyGameInstance->restartGame();
 }
 
-void ACaptain::collectItem(CollectibleType itemType) {
-	UGameplayStatics::PlaySound2D(GetWorld(), CollectItemSound);
+bool ACaptain::tryCollectItem(CollectibleType itemType) {
+	if (!getIsAlive())
+		return false;
 
 	switch (itemType) {
 	case CollectibleType::HealthPotion:
-		updateHP(hitPoints + 25);
+		if (currentHitPoints == maxHitPoints)
+			return false;
+		UGameplayStatics::PlaySound2D(GetWorld(), CollectItemSound);
+		updateHP(std::min(currentHitPoints + 25, maxHitPoints));
 		break;
 	case CollectibleType::Diamond:
+		UGameplayStatics::PlaySound2D(GetWorld(), CollectItemSound);
 		MyGameInstance->collectDiamond();
 		PlayerHUDWidget->setDiamonds(MyGameInstance->CollectedDiamondCount);
 		break;
 	case CollectibleType::DoubleJumpUpgrade:
+		UGameplayStatics::PlaySound2D(GetWorld(), CollectItemSound);
 		unlockDoubleJump();
 		break;
 	}
+	return true;
 }
 
 void ACaptain::unlockDoubleJump() {

@@ -7,9 +7,8 @@
 #include <Kismet/GameplayStatics.h>
 
 // Sets default values
-ALevelExit::ALevelExit()
-{
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ALevelExit::ALevelExit() {
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
@@ -22,25 +21,23 @@ ALevelExit::ALevelExit()
 }
 
 // Called when the game starts or when spawned
-void ALevelExit::BeginPlay()
-{
+void ALevelExit::BeginPlay() {
 	Super::BeginPlay();
-	
+
 	BoxComp->OnComponentBeginOverlap.AddDynamic(this, &ALevelExit::OverlapBegin);
 
 	DoorFlipbook->SetPlaybackPosition(0.0f, false);
 }
 
 // Called every frame
-void ALevelExit::Tick(float DeltaTime)
-{
+void ALevelExit::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
 }
 
 void ALevelExit::OverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
 	ACaptain* player = Cast<ACaptain>(otherActor);
-	if (player && player->isAlive) {
+	if (player && player->getIsAlive()) {
 		if (IsActive) {
 			player->deactivate();
 			IsActive = false;

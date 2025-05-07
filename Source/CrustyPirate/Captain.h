@@ -32,6 +32,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UCameraComponent* Camera;
 
+#pragma region actions
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UInputMappingContext* InputMappingContext;
 
@@ -43,6 +44,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UInputAction* AttackAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UInputAction* JumpAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UInputAction* QuitAction;
+#pragma endregion
 
 #pragma region animations
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -61,13 +69,6 @@ public:
 	UPaperZDAnimSequence* AirAttack2AnimSequence;
 #pragma endregion
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UInputAction* JumpAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UInputAction* QuitAction;
-
-	bool isAlive = true;
 	bool canMove = true;
 	bool canAttack = true;
 	bool isStunned = false;
@@ -80,7 +81,10 @@ public:
 	float attackStunDuration = 0.3f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int hitPoints = 100;
+	int maxHitPoints = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int currentHitPoints = maxHitPoints;
 
 	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate;
 	FTimerHandle stunTimer;
@@ -106,6 +110,8 @@ public:
 	virtual void Tick(float dt) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	bool getIsAlive();
 
 	void move(const FInputActionValue& value);
 
@@ -142,7 +148,7 @@ public:
 
 	void onRestartTimerTimeout();
 
-	void collectItem(CollectibleType itemType);
+	bool tryCollectItem(CollectibleType itemType);
 
 	void unlockDoubleJump();
 

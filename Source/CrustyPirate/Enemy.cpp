@@ -37,7 +37,7 @@ void AEnemy::Tick(float dt) {
 			AddMovementInput({ 1,0,0 }, dir);
 			updateDirection(dir);
 		} else {
-			if (FollowTarget->isAlive) {
+			if (FollowTarget->getIsAlive()) {
 				attack();
 			}
 		}

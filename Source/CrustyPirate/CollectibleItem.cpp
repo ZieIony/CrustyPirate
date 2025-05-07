@@ -41,8 +41,7 @@ void ACollectibleItem::OverlapBegin(
 	const FHitResult& sweepResults
 ) {
 	ACaptain* player = Cast<ACaptain>(otherActor);
-	if (player && player->isAlive) {
-		player->collectItem(Type);
+	if (player && player->tryCollectItem(Type)) {
 		Destroy();
 	}
 }
