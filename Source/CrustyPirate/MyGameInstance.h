@@ -26,7 +26,10 @@ public:
 	int PlayerHP = 100;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	int CollectedDiamondCount = 0;
+	int CoinsCollected = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	int DiamondsCollected = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool IsDoubleJumpUnlocked = false;
@@ -36,7 +39,9 @@ public:
 
 	void setPlayerHP(int newHP);
 
-	void collectDiamond();
+	void collectCoins(int count);
+
+	void collectDiamonds(int count);
 
 	void changeLevel(int newLevelIndex);
 

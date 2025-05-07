@@ -49,7 +49,8 @@ void ACaptain::BeginPlay() {
 		if (PlayerHUDWidget) {
 			PlayerHUDWidget->AddToPlayerScreen();
 			PlayerHUDWidget->setHP(currentHitPoints);
-			PlayerHUDWidget->setDiamonds(MyGameInstance->CollectedDiamondCount);
+			PlayerHUDWidget->setCoins(MyGameInstance->CoinsCollected);
+			PlayerHUDWidget->setDiamonds(MyGameInstance->DiamondsCollected);
 			PlayerHUDWidget->setLevel(MyGameInstance->CurrentLevelIndex);
 		}
 	}
@@ -204,21 +205,26 @@ void ACaptain::onRestartTimerTimeout() {
 	MyGameInstance->restartGame();
 }
 
-bool ACaptain::tryCollectItem(CollectibleType itemType) {
+bool ACaptain::tryCollectItem(ACollectibleItem& item) {
 	if (!getIsAlive())
 		return false;
 
-	switch (itemType) {
-	case CollectibleType::HealthPotion:
+	switch (item.Type) {
+	case CollectibleType::Potion:
 		if (currentHitPoints == maxHitPoints)
 			return false;
 		UGameplayStatics::PlaySound2D(GetWorld(), CollectItemSound);
-		updateHP(std::min(currentHitPoints + 25, maxHitPoints));
+		updateHP(std::min(currentHitPoints + item.Value, maxHitPoints));
+		break;
+	case CollectibleType::Coin:
+		UGameplayStatics::PlaySound2D(GetWorld(), CollectItemSound);
+		MyGameInstance->collectCoins(item.Value);
+		PlayerHUDWidget->setCoins(MyGameInstance->CoinsCollected);
 		break;
 	case CollectibleType::Diamond:
 		UGameplayStatics::PlaySound2D(GetWorld(), CollectItemSound);
-		MyGameInstance->collectDiamond();
-		PlayerHUDWidget->setDiamonds(MyGameInstance->CollectedDiamondCount);
+		MyGameInstance->collectDiamonds(item.Value);
+		PlayerHUDWidget->setDiamonds(MyGameInstance->DiamondsCollected);
 		break;
 	case CollectibleType::DoubleJumpUpgrade:
 		UGameplayStatics::PlaySound2D(GetWorld(), CollectItemSound);

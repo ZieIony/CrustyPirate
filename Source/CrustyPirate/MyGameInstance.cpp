@@ -8,8 +8,12 @@ void UMyGameInstance::setPlayerHP(int newHP) {
 	this->PlayerHP = newHP;
 }
 
-void UMyGameInstance::collectDiamond() {
-	CollectedDiamondCount++;
+void UMyGameInstance::collectCoins(int count) {
+	CoinsCollected += count;
+}
+
+void UMyGameInstance::collectDiamonds(int count) {
+	DiamondsCollected += count;
 }
 
 void UMyGameInstance::changeLevel(int newLevelIndex) {
@@ -21,7 +25,7 @@ void UMyGameInstance::changeLevel(int newLevelIndex) {
 
 void UMyGameInstance::restartGame() {
 	PlayerHP = 100;
-	CollectedDiamondCount = 0;
+	DiamondsCollected = 0;
 	IsDoubleJumpUnlocked = false;
 
 	changeLevel(0);

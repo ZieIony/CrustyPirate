@@ -21,12 +21,16 @@ public:
 	UTextBlock* HPText;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UTextBlock* CoinsText;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* DiamondsText;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* LevelText;
 
 	void setHP(int newHP);
-	void setDiamonds(int amount);
+	void setCoins(int count);
+	void setDiamonds(int count);
 	void setLevel(int index);
 };

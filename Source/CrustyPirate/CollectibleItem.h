@@ -11,8 +11,9 @@
 
 UENUM(BlueprintType)
 enum class CollectibleType:uint8 {
+	Coin,
 	Diamond,
-	HealthPotion,
+	Potion,
 	DoubleJumpUpgrade
 };
 
@@ -30,6 +31,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	CollectibleType Type;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int Value;
 
 	// Sets default values for this actor's properties
 	ACollectibleItem();

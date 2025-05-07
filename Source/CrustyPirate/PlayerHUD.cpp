@@ -8,8 +8,13 @@ void UPlayerHUD::setHP(int newHP) {
 	HPText->SetText(FText::FromString(text));
 }
 
-void UPlayerHUD::setDiamonds(int amount) {
-	FString text = FString::Printf(TEXT("diamonds: %d"), amount);
+void UPlayerHUD::setCoins(int count) {
+	FString text = FString::Printf(TEXT("coins: %d"), count);
+	CoinsText->SetText(FText::FromString(text));
+}
+
+void UPlayerHUD::setDiamonds(int count) {
+	FString text = FString::Printf(TEXT("diamonds: %d"), count);
 	DiamondsText->SetText(FText::FromString(text));
 }
 

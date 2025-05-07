@@ -148,7 +148,7 @@ public:
 
 	void onRestartTimerTimeout();
 
-	bool tryCollectItem(CollectibleType itemType);
+	bool tryCollectItem(ACollectibleItem& item);
 
 	void unlockDoubleJump();
 
