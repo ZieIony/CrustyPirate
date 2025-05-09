@@ -5,6 +5,7 @@
 #include <EnhancedInputSubsystems.h>
 #include <Kismet/GameplayStatics.h>
 #include <Kismet/KismetSystemLibrary.h>
+#include "Destructible.h"
 
 ACaptain::ACaptain() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -142,9 +143,10 @@ void ACaptain::onAttackOverrideAnimEnd(bool completed) {
 }
 
 void ACaptain::AttackBoxOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
-	auto enemy = Cast<AEnemy>(otherActor);
-	if (enemy) {
+	if (auto enemy = Cast<AEnemy>(otherActor)) {
 		enemy->takeDamage(attackDamage, attackStunDuration);
+	} else if (auto destructible = Cast<ADestructible>(otherActor)) {
+		destructible->takeDamage(attackDamage);
 	}
 }
 
@@ -152,9 +154,11 @@ void ACaptain::EnableAttackCollisionBox(bool enable) {
 	if (enable) {
 		AttackCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		AttackCollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+		AttackCollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Destructible, ECollisionResponse::ECR_Overlap);
 	} else {
 		AttackCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		AttackCollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+		AttackCollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Destructible, ECollisionResponse::ECR_Ignore);
 	}
 }
 
