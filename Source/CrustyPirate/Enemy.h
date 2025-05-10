@@ -4,19 +4,16 @@
 
 #include "Captain.h"
 #include "CoreMinimal.h"
-#include "EnemyHealthBar.h"
-#include "PaperZDAnimInstance.h"
-#include "PaperZDCharacter.h"
-#include <AnimSequences/PaperZDAnimSequence.h>
-#include <Components/BoxComponent.h>
-#include <Components/SphereComponent.h>
-#include <Components/TextRenderComponent.h>
-#include <Engine/TimerHandle.h>
 #include <Delegates/DelegateCombinations.h>
 
 #include "Enemy.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, NewHealth);
+
+class USphereComponent;
+class UBoxComponent;
+class ACaptain;
+class UPaperZDAnimSequence;
 
 /**
  * 
@@ -56,7 +53,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int hitPoints = MaxHitPoints;
 
-	bool isAlive = true;
 	bool canMove = true;
 	bool isStunned = false;
 	bool canAttack = true;
@@ -93,6 +89,8 @@ public:
 		UPrimitiveComponent* otherComponent,
 		int32 otherBodyIndex
 	);
+
+	bool getIsAlive();
 
 	void updateDirection(float moveDirection);
 

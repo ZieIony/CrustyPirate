@@ -3,6 +3,13 @@
 
 #include "Enemy.h"
 #include <Kismet/GameplayStatics.h>
+#include "EnemyHealthBar.h"
+#include "PaperZDAnimInstance.h"
+#include "PaperZDCharacter.h"
+#include <AnimSequences/PaperZDAnimSequence.h>
+#include <Components/BoxComponent.h>
+#include <Components/SphereComponent.h>
+#include <Engine/TimerHandle.h>
 
 AEnemy::AEnemy() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -30,7 +37,7 @@ void AEnemy::BeginPlay() {
 void AEnemy::Tick(float dt) {
 	Super::Tick(dt);
 
-	if (isAlive && FollowTarget && !isStunned) {
+	if (getIsAlive() && FollowTarget && !isStunned) {
 		float distX = FollowTarget->GetActorLocation().X - GetActorLocation().X;
 		if (fabs(distX) > stopDistanceToTarget && canMove) {
 			float dir = distX > 0 ? 1.0f : -1.0f;
@@ -55,6 +62,10 @@ void AEnemy::DetectorOverlapEnd(UPrimitiveComponent* overlappedComponent, AActor
 	FollowTarget = nullptr;
 }
 
+bool AEnemy::getIsAlive() {
+	return hitPoints > 0;
+}
+
 void AEnemy::updateDirection(float moveDirection) {
 	FRotator currentRotation = GetActorRotation();
 	if (moveDirection < 0) {
@@ -70,20 +81,19 @@ void AEnemy::updateHP(int newHP) {
 }
 
 void AEnemy::takeDamage(int damageAmount, float stunDuration) {
-	if (!isAlive)
+	if (!getIsAlive())
 		return;
 
 	updateHP(std::max(0, hitPoints - damageAmount));
 
 	if (hitPoints == 0) {
-		isAlive = false;
 		canMove = false;
 		canAttack = false;
 
-		GetAnimInstance()->JumpToNode(FName("JumpDie"), FName("EnemyStateMachine"));
+		GetAnimInstance()->JumpToNode(FName("jumpDie"));
 		EnableAttackCollisionBox(false);
 	} else {
-		GetAnimInstance()->JumpToNode(FName("JumpTakeHit"), FName("EnemyStateMachine"));
+		GetAnimInstance()->JumpToNode(FName("jumpTakeHit"));
 		stun(stunDuration);
 	}
 }
@@ -103,7 +113,7 @@ void AEnemy::onStunTimerTimeout() {
 }
 
 void AEnemy::attack() {
-	if (isAlive && canAttack && !isStunned) {
+	if (getIsAlive() && canAttack && !isStunned) {
 		canAttack = false;
 		canMove = false;
 
@@ -114,13 +124,13 @@ void AEnemy::attack() {
 }
 
 void AEnemy::onAttackCooldownTimerTimeout() {
-	if (isAlive) {
+	if (getIsAlive()) {
 		canAttack = true;
 	}
 }
 
 void AEnemy::onAttackOverrideAnimEnd(bool completed) {
-	if (isAlive) {
+	if (getIsAlive()) {
 		canMove = true;
 	}
 }
