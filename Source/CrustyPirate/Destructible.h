@@ -10,6 +10,7 @@
 
 class UPaperFlipbookComponent;
 class UPaperZDAnimationComponent;
+class ACollectibleItem;
 
 UCLASS()
 class CRUSTYPIRATE_API ADestructible : public AActor
@@ -32,6 +33,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int CurrentHitPoints = TotalHitPoints;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ACollectibleItem> ContentsClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int ContentsCount = 3;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ACollectibleItem> ContentsClass2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int ContentsCount2 = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float LaunchContentsForce = 1;
+
 	// Sets default values for this actor's properties
 	ADestructible();
 
@@ -44,4 +60,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void takeDamage(int damageAmount);
+
+	void destroyAndSpawnContents();
 };
