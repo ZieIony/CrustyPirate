@@ -101,7 +101,6 @@ void AEnemy::takeDamage(int damageAmount, float stunDuration, float stunForce) {
 			auto stunImpulse = FVector(direction, 0, abs(direction));
 			stunImpulse.Normalize();
 			stunImpulse = stunImpulse * stunForce;
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, stunImpulse.ToString());
 			GetCharacterMovement()->AddImpulse(stunImpulse);
 		}
 	}
