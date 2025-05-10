@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "DestructiblePiece.h"
 
 #include "Destructible.generated.h"
 
@@ -47,6 +48,20 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float LaunchContentsForce = 1;
+
+#pragma region destructible pieces
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ADestructiblePiece> DestructiblePiece;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ADestructiblePiece> DestructiblePiece2;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ADestructiblePiece> DestructiblePiece3;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ADestructiblePiece> DestructiblePiece4;
+#pragma endregion
 
 	// Sets default values for this actor's properties
 	ADestructible();

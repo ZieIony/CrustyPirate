@@ -9,9 +9,8 @@
 #include "CollectibleItem.h"
 
 // Sets default values
-ADestructible::ADestructible()
-{
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ADestructible::ADestructible() {
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
@@ -25,14 +24,12 @@ ADestructible::ADestructible()
 }
 
 // Called when the game starts or when spawned
-void ADestructible::BeginPlay()
-{
+void ADestructible::BeginPlay() {
 	Super::BeginPlay();
 }
 
 // Called every frame
-void ADestructible::Tick(float DeltaTime)
-{
+void ADestructible::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 }
 
@@ -70,6 +67,10 @@ void ADestructible::destroyAndSpawnContents() {
 			);
 		}
 	}
+	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece, GetActorLocation(), FRotator::ZeroRotator);
+	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece2, GetActorLocation(), FRotator::ZeroRotator);
+	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece3, GetActorLocation(), FRotator::ZeroRotator);
+	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece4, GetActorLocation(), FRotator::ZeroRotator);
 	Destroy();
 }
 
