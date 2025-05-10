@@ -40,7 +40,7 @@ void ACaptain::BeginPlay() {
 
 	MyGameInstance = Cast<UMyGameInstance>(GetGameInstance());
 	if (MyGameInstance) {
-		currentHitPoints = MyGameInstance->PlayerHP;
+		CurrentHitPoints = MyGameInstance->PlayerHP;
 		if (MyGameInstance->IsDoubleJumpUnlocked) {
 			unlockDoubleJump();
 		}
@@ -50,7 +50,7 @@ void ACaptain::BeginPlay() {
 		PlayerHUDWidget = CreateWidget<UPlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0), PlayerHUDClass);
 		if (PlayerHUDWidget) {
 			PlayerHUDWidget->AddToPlayerScreen();
-			PlayerHUDWidget->setHP(currentHitPoints);
+			PlayerHUDWidget->setHP(CurrentHitPoints);
 			PlayerHUDWidget->setCoins(MyGameInstance->CoinsCollected);
 			PlayerHUDWidget->setDiamonds(MyGameInstance->DiamondsCollected);
 			PlayerHUDWidget->setLevel(MyGameInstance->CurrentLevelIndex);
@@ -82,7 +82,7 @@ void ACaptain::SetupPlayerInputComponent(UInputComponent* playerInputComponent) 
 }
 
 bool ACaptain::getIsAlive() {
-	return currentHitPoints > 0;
+	return CurrentHitPoints > 0;
 }
 
 void ACaptain::move(const FInputActionValue& value) {
@@ -145,9 +145,9 @@ void ACaptain::onAttackOverrideAnimEnd(bool completed) {
 
 void ACaptain::AttackBoxOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
 	if (auto enemy = Cast<AEnemy>(otherActor)) {
-		enemy->takeDamage(attackDamage, attackStunDuration);
+		enemy->takeDamage(AttackDamage, AttackStunDuration, AttackStunForce);
 	} else if (auto destructible = Cast<ADestructible>(otherActor)) {
-		destructible->takeDamage(attackDamage);
+		destructible->takeDamage(AttackDamage);
 	} else if (auto chest = Cast<AChest>(otherActor)) {
 		chest->unlock();
 	}
@@ -170,9 +170,9 @@ void ACaptain::takeDamage(int damageAmount, float stunDuration) {
 		return;
 
 	EnableAttackCollisionBox(false);
-	updateHP(std::max(0, currentHitPoints - damageAmount));
+	updateHP(std::max(0, CurrentHitPoints - damageAmount));
 
-	if (currentHitPoints == 0) {
+	if (CurrentHitPoints == 0) {
 		canMove = false;
 		canAttack = false;
 
@@ -187,10 +187,10 @@ void ACaptain::takeDamage(int damageAmount, float stunDuration) {
 }
 
 void ACaptain::updateHP(int newHP) {
-	currentHitPoints = newHP;
-	MyGameInstance->setPlayerHP(currentHitPoints);
+	CurrentHitPoints = newHP;
+	MyGameInstance->setPlayerHP(CurrentHitPoints);
 	if (PlayerHUDWidget) {
-		PlayerHUDWidget->setHP(currentHitPoints);
+		PlayerHUDWidget->setHP(CurrentHitPoints);
 	}
 }
 
@@ -218,10 +218,10 @@ bool ACaptain::tryCollectItem(ACollectibleItem& item) {
 
 	switch (item.Type) {
 	case CollectibleType::Potion:
-		if (currentHitPoints == maxHitPoints)
+		if (CurrentHitPoints == MaxHitPoints)
 			return false;
 		UGameplayStatics::PlaySound2D(GetWorld(), CollectItemSound);
-		updateHP(std::min(currentHitPoints + item.Value, maxHitPoints));
+		updateHP(std::min(CurrentHitPoints + item.Value, MaxHitPoints));
 		break;
 	case CollectibleType::Coin:
 		UGameplayStatics::PlaySound2D(GetWorld(), CollectItemSound);

@@ -9,6 +9,7 @@
 #include <AnimSequences/PaperZDAnimSequence.h>
 #include <Components/BoxComponent.h>
 #include <Components/SphereComponent.h>
+#include <GameFramework/CharacterMovementComponent.h>
 #include <Engine/TimerHandle.h>
 
 AEnemy::AEnemy() {
@@ -80,7 +81,7 @@ void AEnemy::updateHP(int newHP) {
 	OnHealthChangedEvent.Broadcast(newHP);
 }
 
-void AEnemy::takeDamage(int damageAmount, float stunDuration) {
+void AEnemy::takeDamage(int damageAmount, float stunDuration, float stunForce) {
 	if (!getIsAlive())
 		return;
 
@@ -95,6 +96,14 @@ void AEnemy::takeDamage(int damageAmount, float stunDuration) {
 	} else {
 		GetAnimInstance()->JumpToNode(FName("jumpTakeHit"));
 		stun(stunDuration);
+		if (FollowTarget) {
+			auto direction = GetActorLocation().X - FollowTarget->GetActorLocation().X;
+			auto stunImpulse = FVector(direction, 0, abs(direction));
+			stunImpulse.Normalize();
+			stunImpulse = stunImpulse * stunForce;
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, stunImpulse.ToString());
+			GetCharacterMovement()->AddImpulse(stunImpulse);
+		}
 	}
 }
 

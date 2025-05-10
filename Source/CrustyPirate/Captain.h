@@ -75,16 +75,19 @@ public:
 	bool isActive = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int attackDamage = 20;
+	int AttackDamage = 20;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float attackStunDuration = 0.3f;
+	float AttackStunDuration = 0.3f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float AttackStunForce = 500;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int maxHitPoints = 100;
+	int MaxHitPoints = 100;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int currentHitPoints = maxHitPoints;
+	int CurrentHitPoints = MaxHitPoints;
 
 	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate;
 	FTimerHandle stunTimer;

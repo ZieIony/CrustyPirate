@@ -96,7 +96,7 @@ public:
 
 	void updateHP(int newHP);
 
-	void takeDamage(int damageAmount, float stunDuration);
+	void takeDamage(int damageAmount, float stunDuration, float stunForce);
 
 	void stun(float durationInSeconds);
 
