@@ -4,34 +4,33 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-
-#include "Destructible.generated.h"
+#include "Chest.generated.h"
 
 class UPaperFlipbookComponent;
-class UPaperZDAnimationComponent;
 class ACollectibleItem;
 class UBoxComponent;
+class UPaperFlipbook;
+class USoundBase;
 
 UCLASS()
-class CRUSTYPIRATE_API ADestructible : public AActor
+class CRUSTYPIRATE_API AChest : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
+	bool locked = true;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UBoxComponent* BoxComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UPaperFlipbookComponent> Sprite;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UPaperZDAnimationComponent> AnimationComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPaperFlipbook* UnlockedFlipbook;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int TotalHitPoints = 50;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int CurrentHitPoints = TotalHitPoints;
+	USoundBase* UnlockSound;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACollectibleItem> ContentsClass;
@@ -49,7 +48,7 @@ public:
 	float LaunchContentsForce = 1;
 
 	// Sets default values for this actor's properties
-	ADestructible();
+	AChest();
 
 protected:
 	// Called when the game starts or when spawned
@@ -59,7 +58,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void takeDamage(int damageAmount);
+	void unlock();
 
-	void destroyAndSpawnContents();
+	UFUNCTION()
+	void OverlapBegin(
+		UPrimitiveComponent* overlappedComponent,
+		AActor* otherActor,
+		UPrimitiveComponent* otherComponent,
+		int32 otherBodyIndex,
+		bool fromSweep,
+		const FHitResult& sweepResults
+	);
 };

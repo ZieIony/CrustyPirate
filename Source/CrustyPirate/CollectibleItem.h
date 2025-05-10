@@ -55,4 +55,6 @@ public:
 		bool fromSweep,
 		const FHitResult& sweepResults
 	);
+
+	static void spawn(UWorld* world, TSubclassOf<ACollectibleItem> subclass, FVector location, float launchForce);
 };

@@ -6,6 +6,7 @@
 #include <Kismet/GameplayStatics.h>
 #include <Kismet/KismetSystemLibrary.h>
 #include "Destructible.h"
+#include "Chest.h"
 
 ACaptain::ACaptain() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -147,6 +148,8 @@ void ACaptain::AttackBoxOverlapBegin(UPrimitiveComponent* overlappedComponent, A
 		enemy->takeDamage(attackDamage, attackStunDuration);
 	} else if (auto destructible = Cast<ADestructible>(otherActor)) {
 		destructible->takeDamage(attackDamage);
+	} else if (auto chest = Cast<AChest>(otherActor)) {
+		chest->unlock();
 	}
 }
 

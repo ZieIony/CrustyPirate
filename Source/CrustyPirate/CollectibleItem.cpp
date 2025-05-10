@@ -46,3 +46,14 @@ void ACollectibleItem::OverlapBegin(
 	}
 }
 
+void ACollectibleItem::spawn(UWorld* world, TSubclassOf<ACollectibleItem> subclass, FVector location, float launchForce) {
+	auto* collectibleItem = world->SpawnActor<ACollectibleItem>(
+		subclass,
+		location,
+		FRotator::ZeroRotator
+	);
+	auto force = FVector((float)rand() / RAND_MAX * 2 - 1, 0, 1);
+	force.Normalize();
+	collectibleItem->CapsuleComp->AddImpulse(force * launchForce);
+}
+

@@ -1,15 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Destructible.h"
-#include "PaperZDAnimationComponent.h"
-#include <PaperCharacter.h>
+#include "Chest.h"
+#include <Components/BoxComponent.h>
 #include "PaperFlipbookComponent.h"
-#include "Captain.h"
+#include "PaperFlipbook.h"
 #include "CollectibleItem.h"
+#include "Captain.h"
+#include <Sound/SoundBase.h>
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
-ADestructible::ADestructible()
+AChest::AChest()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -19,37 +21,31 @@ ADestructible::ADestructible()
 
 	Sprite = CreateOptionalDefaultSubobject<UPaperFlipbookComponent>(TEXT("Sprite"));
 	Sprite->SetupAttachment(RootComponent);
-
-	AnimationComponent = CreateDefaultSubobject<UPaperZDAnimationComponent>(TEXT("Animation"));
-	AnimationComponent->InitRenderComponent(Sprite);
 }
 
 // Called when the game starts or when spawned
-void ADestructible::BeginPlay()
+void AChest::BeginPlay()
 {
 	Super::BeginPlay();
+	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AChest::OverlapBegin);
 }
 
 // Called every frame
-void ADestructible::Tick(float DeltaTime)
+void AChest::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
 }
 
-void ADestructible::takeDamage(int damageAmount) {
-	if (CurrentHitPoints <= 0)
+void AChest::unlock() {
+	if (!locked)
 		return;
+	locked = false;
 
-	CurrentHitPoints = std::max(0, CurrentHitPoints - damageAmount);
-
-	if (CurrentHitPoints == 0) {
-		destroyAndSpawnContents();
-	} else {
-		AnimationComponent->GetAnimInstance()->JumpToNode(FName("jumpHit"));
-	}
-}
-
-void ADestructible::destroyAndSpawnContents() {
+	Sprite->SetFlipbook(UnlockedFlipbook);
+	Sprite->SetLooping(false);
+	UGameplayStatics::PlaySound2D(GetWorld(), UnlockSound);
+	
 	if (ContentsClass) {
 		for (int i = 0; i < ContentsCount; i++) {
 			ACollectibleItem::spawn(
@@ -70,6 +66,11 @@ void ADestructible::destroyAndSpawnContents() {
 			);
 		}
 	}
-	Destroy();
+}
+
+void AChest::OverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
+	if (auto captain = Cast<ACaptain>(otherActor)) {
+		unlock();
+	}
 }
 
