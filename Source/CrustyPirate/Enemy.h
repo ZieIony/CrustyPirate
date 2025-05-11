@@ -30,6 +30,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UBoxComponent* AttackCollisionBox;
 
+#pragma region dialogue
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPaperFlipbookComponent* DialogueComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPaperFlipbook* ExclamationFlipbook;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPaperFlipbook* DeadFlipbook;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPaperFlipbook* QuestionFlipbook;
+#pragma endregion
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	ACaptain* FollowTarget;
 
@@ -123,4 +137,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void EnableAttackCollisionBox(bool enable);
+
+	void playDialogue(DialogueType type, bool force = false);
+
+	UFUNCTION()
+	void onDialogueFinishedPlaying();
 };

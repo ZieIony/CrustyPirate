@@ -17,6 +17,10 @@
 
 #include "Captain.generated.h"
 
+enum class DialogueType {
+	EXCLAMATION, QUESTION, DEAD
+};
+
 /**
  * 
  */
@@ -31,6 +35,20 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UCameraComponent* Camera;
+
+#pragma region dialogue
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPaperFlipbookComponent* DialogueComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPaperFlipbook* ExclamationFlipbook;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPaperFlipbook* DeadFlipbook;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPaperFlipbook* QuestionFlipbook;
+#pragma endregion
 
 #pragma region actions
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -93,6 +111,11 @@ public:
 	FTimerHandle stunTimer;
 
 	FTimerHandle restartTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float IdleDelay = 10;
+
+	FTimerHandle idleTimer;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UPlayerHUD> PlayerHUDClass;
@@ -159,4 +182,11 @@ public:
 	void deactivate();
 
 	void quitGame();
+
+	void playDialogue(DialogueType type, bool force = true);
+
+	UFUNCTION()
+	void onDialogueFinishedPlaying();
+
+	void onIdleTimerTimeout();
 };

@@ -20,6 +20,10 @@ ACaptain::ACaptain() {
 
 	AttackCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackCollisionBox"));
 	AttackCollisionBox->SetupAttachment(RootComponent);
+
+	DialogueComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Dialogue"));
+	DialogueComponent->SetupAttachment(RootComponent);
+	DialogueComponent->OnFinishedPlaying.AddDynamic(this, &ACaptain::onDialogueFinishedPlaying);
 }
 
 void ACaptain::BeginPlay() {
@@ -38,6 +42,7 @@ void ACaptain::BeginPlay() {
 	OnAttackOverrideEndDelegate.BindUObject(this, &ACaptain::onAttackOverrideAnimEnd);
 	AttackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &ACaptain::AttackBoxOverlapBegin);
 	EnableAttackCollisionBox(false);
+	DialogueComponent->SetVisibility(false);
 
 	MyGameInstance = Cast<UMyGameInstance>(GetGameInstance());
 	if (MyGameInstance) {
@@ -57,6 +62,8 @@ void ACaptain::BeginPlay() {
 			PlayerHUDWidget->setLevel(MyGameInstance->CurrentLevelIndex);
 		}
 	}
+
+	GetWorldTimerManager().SetTimer(idleTimer, this, &ACaptain::onIdleTimerTimeout, 1, false, IdleDelay);
 }
 
 void ACaptain::Tick(float dt) {
@@ -92,15 +99,20 @@ void ACaptain::move(const FInputActionValue& value) {
 		FVector dir = { 1,0,0 };
 		AddMovementInput(dir, moveActionValue);
 		updateDirection(moveActionValue);
+		GetWorldTimerManager().ClearTimer(idleTimer);
+		GetWorldTimerManager().SetTimer(idleTimer, this, &ACaptain::onIdleTimerTimeout, 1, false, IdleDelay);
 	}
 }
 
 void ACaptain::updateDirection(float moveDirection) {
 	FRotator currentRotation = Controller->GetControlRotation();
+	auto dialogueLocation = DialogueComponent->GetRelativeLocation();
 	if (moveDirection < 0) {
 		Controller->SetControlRotation({ currentRotation.Pitch,180,currentRotation.Roll });
+		DialogueComponent->SetRelativeLocation(FVector(-fabs(dialogueLocation.X), dialogueLocation.Y, dialogueLocation.Z));
 	} else if (moveDirection > 0) {
 		Controller->SetControlRotation({ currentRotation.Pitch,0,currentRotation.Roll });
+		DialogueComponent->SetRelativeLocation(FVector(fabs(dialogueLocation.X), dialogueLocation.Y, dialogueLocation.Z));
 	}
 }
 
@@ -111,6 +123,8 @@ void ACaptain::jumpStarted(const FInputActionValue& value) {
 
 void ACaptain::jumpEnded(const FInputActionValue& value) {
 	StopJumping();
+	GetWorldTimerManager().ClearTimer(idleTimer);
+	GetWorldTimerManager().SetTimer(idleTimer, this, &ACaptain::onIdleTimerTimeout, 1, false, IdleDelay);
 }
 
 void ACaptain::attack(const FInputActionValue& value) {
@@ -118,6 +132,8 @@ void ACaptain::attack(const FInputActionValue& value) {
 		canAttack = false;
 		canMove = false;
 
+		GetWorldTimerManager().ClearTimer(idleTimer);
+		GetWorldTimerManager().SetTimer(idleTimer, this, &ACaptain::onIdleTimerTimeout, 1, false, IdleDelay);
 		if (GetVelocity().Z != 0) {
 			auto animation = ((float)rand() / RAND_MAX) > 0.5f ? AirAttackAnimSequence : AirAttack2AnimSequence;
 			GetAnimInstance()->PlayAnimationOverride(animation, FName("AttackSlot"), 1, 0, OnAttackOverrideEndDelegate);
@@ -181,10 +197,12 @@ void ACaptain::takeDamage(int damageAmount, float stunDuration, float stunForce,
 
 		float restartDelay = 3;
 		GetWorldTimerManager().SetTimer(restartTimer, this, &ACaptain::onRestartTimerTimeout, 1, false, restartDelay);
-
+		GetWorldTimerManager().ClearTimer(idleTimer);
+		playDialogue(DialogueType::DEAD, true);
 		GetAnimInstance()->JumpToNode(FName("JumpDie"), FName("CaptainStateMachine"));
 	} else {
 		stun(stunDuration);
+		playDialogue(DialogueType::EXCLAMATION);
 		GetAnimInstance()->JumpToNode(FName("JumpTakeHit"), FName("CaptainStateMachine"));
 
 		auto direction = GetActorLocation().X - otherActor->GetActorLocation().X;
@@ -267,4 +285,28 @@ void ACaptain::deactivate() {
 
 void ACaptain::quitGame() {
 	UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Quit, false);
+}
+
+void ACaptain::playDialogue(DialogueType type, bool force) {
+	if ((!force && DialogueComponent->IsVisible()) || !getIsAlive())
+		return;
+
+	if (type == DialogueType::DEAD) {
+		DialogueComponent->SetFlipbook(DeadFlipbook);
+	} else if (type == DialogueType::QUESTION) {
+		DialogueComponent->SetFlipbook(QuestionFlipbook);
+	} else if (type == DialogueType::EXCLAMATION) {
+		DialogueComponent->SetFlipbook(ExclamationFlipbook);
+	}
+	DialogueComponent->SetVisibility(true);
+	DialogueComponent->SetLooping(false);
+	DialogueComponent->PlayFromStart();
+}
+
+void ACaptain::onDialogueFinishedPlaying() {
+	DialogueComponent->SetVisibility(false);
+}
+
+void ACaptain::onIdleTimerTimeout() {
+	playDialogue(DialogueType::QUESTION);
 }

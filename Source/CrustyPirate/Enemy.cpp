@@ -20,6 +20,10 @@ AEnemy::AEnemy() {
 
 	AttackCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackCollisionBox"));
 	AttackCollisionBox->SetupAttachment(RootComponent);
+
+	DialogueComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Dialogue"));
+	DialogueComponent->SetupAttachment(RootComponent);
+	DialogueComponent->OnFinishedPlaying.AddDynamic(this, &AEnemy::onDialogueFinishedPlaying);
 }
 
 void AEnemy::BeginPlay() {
@@ -28,6 +32,7 @@ void AEnemy::BeginPlay() {
 	PlayerDetectorSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::DetectorOverlapBegin);
 	PlayerDetectorSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::DetectorOverlapEnd);
 
+	DialogueComponent->SetVisibility(false);
 	updateHP(hitPoints);
 
 	OnAttackOverrideEndDelegate.BindUObject(this, &AEnemy::onAttackOverrideAnimEnd);
@@ -56,6 +61,7 @@ void AEnemy::DetectorOverlapBegin(UPrimitiveComponent* overlappedComponent, AAct
 	auto captain = Cast<ACaptain>(otherActor);
 	if (captain) {
 		FollowTarget = captain;
+		playDialogue(DialogueType::QUESTION);
 	}
 }
 
@@ -69,10 +75,13 @@ bool AEnemy::getIsAlive() {
 
 void AEnemy::updateDirection(float moveDirection) {
 	FRotator currentRotation = GetActorRotation();
+	auto dialogueLocation = DialogueComponent->GetRelativeLocation();
 	if (moveDirection < 0) {
 		SetActorRotation({ currentRotation.Pitch,180,currentRotation.Roll });
+		DialogueComponent->SetRelativeLocation(FVector(-fabs(dialogueLocation.X), dialogueLocation.Y, dialogueLocation.Z));
 	} else if (moveDirection > 0) {
 		SetActorRotation({ currentRotation.Pitch,0,currentRotation.Roll });
+		DialogueComponent->SetRelativeLocation(FVector(fabs(dialogueLocation.X), dialogueLocation.Y, dialogueLocation.Z));
 	}
 }
 
@@ -93,8 +102,10 @@ void AEnemy::takeDamage(int damageAmount, float stunDuration, float stunForce) {
 
 		GetAnimInstance()->JumpToNode(FName("jumpDie"));
 		EnableAttackCollisionBox(false);
+		playDialogue(DialogueType::DEAD, true);
 	} else {
 		GetAnimInstance()->JumpToNode(FName("jumpTakeHit"));
+		playDialogue(DialogueType::EXCLAMATION);
 		stun(stunDuration);
 		if (FollowTarget) {
 			auto direction = GetActorLocation().X - FollowTarget->GetActorLocation().X;
@@ -159,4 +170,24 @@ void AEnemy::EnableAttackCollisionBox(bool enable) {
 		AttackCollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	}
 
+}
+
+void AEnemy::playDialogue(DialogueType type, bool force) {
+	if ((!force && DialogueComponent->IsVisible()) || !getIsAlive())
+		return;
+
+	if (type == DialogueType::DEAD) {
+		DialogueComponent->SetFlipbook(DeadFlipbook);
+	} else if (type == DialogueType::QUESTION) {
+		DialogueComponent->SetFlipbook(QuestionFlipbook);
+	} else if (type == DialogueType::EXCLAMATION) {
+		DialogueComponent->SetFlipbook(ExclamationFlipbook);
+	}
+	DialogueComponent->SetVisibility(true);
+	DialogueComponent->SetLooping(false);
+	DialogueComponent->PlayFromStart();
+}
+
+void AEnemy::onDialogueFinishedPlaying() {
+	DialogueComponent->SetVisibility(false);
 }
