@@ -288,7 +288,7 @@ void ACaptain::quitGame() {
 }
 
 void ACaptain::playDialogue(DialogueType type, bool force) {
-	if ((!force && DialogueComponent->IsVisible()) || !getIsAlive())
+	if ((!force && DialogueComponent->IsVisible()) || (!getIsAlive() && type != DialogueType::DEAD))
 		return;
 
 	if (type == DialogueType::DEAD) {

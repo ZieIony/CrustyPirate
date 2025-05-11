@@ -173,7 +173,7 @@ void AEnemy::EnableAttackCollisionBox(bool enable) {
 }
 
 void AEnemy::playDialogue(DialogueType type, bool force) {
-	if ((!force && DialogueComponent->IsVisible()) || !getIsAlive())
+	if ((!force && DialogueComponent->IsVisible()) || (!getIsAlive() && type != DialogueType::DEAD))
 		return;
 
 	if (type == DialogueType::DEAD) {
