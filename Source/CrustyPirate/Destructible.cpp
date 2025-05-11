@@ -21,6 +21,18 @@ ADestructible::ADestructible() {
 
 	AnimationComponent = CreateDefaultSubobject<UPaperZDAnimationComponent>(TEXT("Animation"));
 	AnimationComponent->InitRenderComponent(Sprite);
+
+	DestructiblePieceLocation = CreateDefaultSubobject<USceneComponent>(TEXT("DestructiblePieceLocation"));
+	DestructiblePieceLocation->SetupAttachment(RootComponent);
+
+	DestructiblePieceLocation2 = CreateDefaultSubobject<USceneComponent>(TEXT("DestructiblePieceLocation2"));
+	DestructiblePieceLocation2->SetupAttachment(RootComponent);
+
+	DestructiblePieceLocation3 = CreateDefaultSubobject<USceneComponent>(TEXT("DestructiblePieceLocation3"));
+	DestructiblePieceLocation3->SetupAttachment(RootComponent);
+
+	DestructiblePieceLocation4 = CreateDefaultSubobject<USceneComponent>(TEXT("DestructiblePieceLocation4"));
+	DestructiblePieceLocation4->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -67,10 +79,26 @@ void ADestructible::destroyAndSpawnContents() {
 			);
 		}
 	}
-	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece, GetActorLocation(), FRotator::ZeroRotator);
-	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece2, GetActorLocation(), FRotator::ZeroRotator);
-	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece3, GetActorLocation(), FRotator::ZeroRotator);
-	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece4, GetActorLocation(), FRotator::ZeroRotator);
+	GetWorld()->SpawnActor<ADestructiblePiece>(
+		DestructiblePiece,
+		DestructiblePieceLocation->GetComponentLocation(),
+		FRotator::ZeroRotator
+	);
+	GetWorld()->SpawnActor<ADestructiblePiece>(
+		DestructiblePiece2,
+		DestructiblePieceLocation2->GetComponentLocation(),
+		FRotator::ZeroRotator
+	);
+	GetWorld()->SpawnActor<ADestructiblePiece>(
+		DestructiblePiece3,
+		DestructiblePieceLocation3->GetComponentLocation(),
+		FRotator::ZeroRotator
+	);
+	GetWorld()->SpawnActor<ADestructiblePiece>(
+		DestructiblePiece4,
+		DestructiblePieceLocation4->GetComponentLocation(),
+		FRotator::ZeroRotator
+	);
 	Destroy();
 }
 

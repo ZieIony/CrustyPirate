@@ -21,12 +21,20 @@ ADestructiblePiece::ADestructiblePiece() {
 void ADestructiblePiece::BeginPlay() {
 	Super::BeginPlay();
 
-	SetActorLocation(GetActorLocation() + LaunchOffset);
 	auto launchImpulse = LaunchOffset;
 	launchImpulse.Normalize();
 	BoxComponent->AddImpulse(launchImpulse * LaunchForce);
 
-	GetWorldTimerManager().SetTimer(destroyTimer, this, &ADestructiblePiece::onDestroyTimerTimeout, 1, false, DestroyDelay);
+	if (DestroyDelay != 0) {
+		GetWorldTimerManager().SetTimer(
+			destroyTimer,
+			this,
+			&ADestructiblePiece::onDestroyTimerTimeout,
+			1,
+			false,
+			DestroyDelay
+		);
+	}
 }
 
 // Called every frame

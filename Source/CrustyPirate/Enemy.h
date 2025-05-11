@@ -63,6 +63,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float attackStunDuration = 0.3f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float attackStunForce = 10000.0f;
+
 	FTimerHandle stunTimer;
 	FTimerHandle attackCooldownTimer;
 

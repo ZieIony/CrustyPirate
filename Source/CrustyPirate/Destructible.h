@@ -61,6 +61,18 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ADestructiblePiece> DestructiblePiece4;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USceneComponent* DestructiblePieceLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USceneComponent* DestructiblePieceLocation2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USceneComponent* DestructiblePieceLocation3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USceneComponent* DestructiblePieceLocation4;
 #pragma endregion
 
 	// Sets default values for this actor's properties

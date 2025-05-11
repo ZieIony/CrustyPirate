@@ -7,6 +7,7 @@
 #include <Kismet/KismetSystemLibrary.h>
 #include "Destructible.h"
 #include "Chest.h"
+#include "Turret.h"
 
 ACaptain::ACaptain() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -146,6 +147,8 @@ void ACaptain::onAttackOverrideAnimEnd(bool completed) {
 void ACaptain::AttackBoxOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
 	if (auto enemy = Cast<AEnemy>(otherActor)) {
 		enemy->takeDamage(AttackDamage, AttackStunDuration, AttackStunForce);
+	} else if (auto turret = Cast<ATurret>(otherActor)) {
+		turret->takeDamage(AttackDamage);
 	} else if (auto destructible = Cast<ADestructible>(otherActor)) {
 		destructible->takeDamage(AttackDamage);
 	} else if (auto chest = Cast<AChest>(otherActor)) {
@@ -165,7 +168,7 @@ void ACaptain::EnableAttackCollisionBox(bool enable) {
 	}
 }
 
-void ACaptain::takeDamage(int damageAmount, float stunDuration) {
+void ACaptain::takeDamage(int damageAmount, float stunDuration, float stunForce, AActor* otherActor) {
 	if (!getIsAlive() || !isActive)
 		return;
 
@@ -183,6 +186,12 @@ void ACaptain::takeDamage(int damageAmount, float stunDuration) {
 	} else {
 		stun(stunDuration);
 		GetAnimInstance()->JumpToNode(FName("JumpTakeHit"), FName("CaptainStateMachine"));
+
+		auto direction = GetActorLocation().X - otherActor->GetActorLocation().X;
+		auto stunImpulse = FVector(direction, 0, abs(direction));
+		stunImpulse.Normalize();
+		stunImpulse = stunImpulse * stunForce;
+		GetCharacterMovement()->AddImpulse(stunImpulse);
 	}
 }
 

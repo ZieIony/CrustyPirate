@@ -141,7 +141,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EnableAttackCollisionBox(bool enable);
 
-	void takeDamage(int damageAmount, float stunDuration);
+	void takeDamage(int damageAmount, float stunDuration, float stunForce, AActor* otherActor);
 
 	void updateHP(int newHP);
 

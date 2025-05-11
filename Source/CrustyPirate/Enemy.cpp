@@ -77,7 +77,7 @@ void AEnemy::updateDirection(float moveDirection) {
 }
 
 void AEnemy::updateHP(int newHP) {
-	hitPoints = newHP;
+	hitPoints = std::max(0, newHP);
 	OnHealthChangedEvent.Broadcast(newHP);
 }
 
@@ -146,7 +146,7 @@ void AEnemy::onAttackOverrideAnimEnd(bool completed) {
 void AEnemy::AttackBoxOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
 	auto player = Cast<ACaptain>(otherActor);
 	if (player) {
-		player->takeDamage(attackDamage, attackStunDuration);
+		player->takeDamage(attackDamage, attackStunDuration, attackStunForce, this);
 	}
 }
 
