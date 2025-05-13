@@ -162,7 +162,7 @@ void ACaptain::onAttackOverrideAnimEnd(bool completed) {
 
 void ACaptain::AttackBoxOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
 	if (auto enemy = Cast<AEnemy>(otherActor)) {
-		enemy->takeDamage(this, AttackDamage, AttackStunDuration, AttackStunForce);
+		enemy->takeDamage(AttackDamage, AttackStunDuration, AttackStunForce, this);
 	} else if (auto turret = Cast<ATurret>(otherActor)) {
 		turret->takeDamage(AttackDamage);
 	} else if (auto destructible = Cast<ADestructible>(otherActor)) {

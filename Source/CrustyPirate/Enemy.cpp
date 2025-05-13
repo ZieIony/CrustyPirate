@@ -179,7 +179,7 @@ void AEnemy::updateHP(int newHP) {
 	OnHealthChangedEvent.Broadcast(newHP);
 }
 
-void AEnemy::takeDamage(ACaptain* dealer, int damageAmount, float stunDuration, float stunForce) {
+void AEnemy::takeDamage(int damageAmount, float stunDuration, float stunForce, AActor* otherActor) {
 	if (!getIsAlive())
 		return;
 
@@ -192,14 +192,17 @@ void AEnemy::takeDamage(ACaptain* dealer, int damageAmount, float stunDuration, 
 		GetAnimInstance()->JumpToNode(FName("jumpDie"));
 		EnableAttackCollisionBox(false);
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 		GetSprite()->SetTranslucentSortPriority(1);
 		playDialogue(DialogueType::DEAD, true);
 	} else {
 		GetAnimInstance()->JumpToNode(FName("jumpTakeHit"));
 		playDialogue(DialogueType::EXCLAMATION);
 		stun(stunDuration);
-		FollowTarget = dealer;
-		auto direction = GetActorLocation().X - FollowTarget->GetActorLocation().X;
+		if (ACaptain* captain = Cast<ACaptain>(otherActor)) {
+			FollowTarget = captain;
+		}
+		auto direction = GetActorLocation().X - otherActor->GetActorLocation().X;
 		auto stunImpulse = FVector(direction, 0, abs(direction));
 		stunImpulse.Normalize();
 		stunImpulse = stunImpulse * stunForce;

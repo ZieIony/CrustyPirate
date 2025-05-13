@@ -218,7 +218,7 @@ public:
 
 	void updateHP(int newHP);
 
-	void takeDamage(ACaptain* dealer, int damageAmount, float stunDuration, float stunForce);
+	void takeDamage(int damageAmount, float stunDuration, float stunForce, AActor* otherActor);
 
 	void onLostInterestTimerTimeout();
 

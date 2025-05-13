@@ -47,8 +47,8 @@ void ATurret::onAttackCooldownTimerTimeout() {
 }
 
 void ATurret::SpawnBullet() {
-	GetWorld()->SpawnActor<AParticle>(ParticleClass, BulletSpawnLocation->GetComponentLocation(), FRotator::ZeroRotator);
-	GetWorld()->SpawnActor<ABullet>(BulletClass, BulletSpawnLocation->GetComponentLocation(), FRotator::ZeroRotator);
+	GetWorld()->SpawnActor<AParticle>(ParticleClass, BulletSpawnLocation->GetComponentLocation(), GetActorRotation());
+	GetWorld()->SpawnActor<ABullet>(BulletClass, BulletSpawnLocation->GetComponentLocation(), GetActorRotation());
 }
 
 void ATurret::takeDamage(int damageAmount) {
@@ -67,8 +67,8 @@ void ATurret::takeDamage(int damageAmount) {
 }
 
 void ATurret::destroyAndSpawnPieces() {
-	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece, GetActorLocation(), FRotator::ZeroRotator);
-	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece2, GetActorLocation(), FRotator::ZeroRotator);
-	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece3, GetActorLocation(), FRotator::ZeroRotator);
+	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece, GetActorTransform());
+	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece2, GetActorTransform());
+	GetWorld()->SpawnActor<ADestructiblePiece>(DestructiblePiece3, GetActorTransform());
 	Destroy();
 }

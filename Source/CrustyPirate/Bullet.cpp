@@ -6,6 +6,7 @@
 #include <Components/CapsuleComponent.h>
 #include "Captain.h"
 #include <Kismet/GameplayStatics.h>
+#include "Enemy.h"
 
 // Sets default values
 ABullet::ABullet()
@@ -33,13 +34,14 @@ void ABullet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	SetActorLocation(GetActorLocation() + Velocity * DeltaTime);
+	SetActorLocation(GetActorLocation() + GetActorForwardVector() * Velocity * DeltaTime);
 }
 
 void ABullet::OverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
-	ACaptain* player = Cast<ACaptain>(otherActor);
-	if (player){
+	if (ACaptain* player = Cast<ACaptain>(otherActor)){
 		player->takeDamage(attackDamage, attackStunDuration, attackStunForce, this);
+	} else if (AEnemy* enemy = Cast<AEnemy>(otherActor)) {
+		enemy->takeDamage(attackDamage, attackStunDuration, attackStunForce, this);
 	}
 	UGameplayStatics::PlaySound2D(GetWorld(), HitSound);
 	GetWorld()->SpawnActor<AParticle>(ParticleClass, GetActorLocation(), FRotator::ZeroRotator);
