@@ -16,16 +16,36 @@ class ACaptain;
 class UPaperZDAnimSequence;
 
 /**
- * 
+ *
  */
 UCLASS()
-class CRUSTYPIRATE_API AEnemy : public APaperZDCharacter
-{
+class CRUSTYPIRATE_API AEnemy: public APaperZDCharacter {
 	GENERATED_BODY()
-	
+
+private:
+	bool isFacingUpperLedge = false;
+	bool isOnLedge = false;
+	bool isFacingWall = false;
+	bool inAttackRange = false;
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	USphereComponent* PlayerDetectorSphere;
+	UBoxComponent* PlayerDetectionBox;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	USphereComponent* PlayerFollowSphere;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UBoxComponent* UpperLedgeDetectionBox;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UBoxComponent* LedgeDetectionBox;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UBoxComponent* WallDetectionBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UBoxComponent* AttackDetectionBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UBoxComponent* AttackCollisionBox;
@@ -56,7 +76,7 @@ public:
 	FOnHealthChanged OnHealthChangedEvent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float stopDistanceToTarget = 70;
+	float lostInterestDelaySeconds = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float attackCooldownInSeconds = 3;
@@ -80,6 +100,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float attackStunForce = 10000.0f;
 
+	FTimerHandle lostInterestTimer;
 	FTimerHandle stunTimer;
 	FTimerHandle attackCooldownTimer;
 
@@ -90,7 +111,7 @@ public:
 	virtual void Tick(float dt) override;
 
 	UFUNCTION()
-	void DetectorOverlapBegin(
+	void PlayerDetectorOverlapBegin(
 		UPrimitiveComponent* overlappedComponent,
 		AActor* otherActor,
 		UPrimitiveComponent* otherComponent,
@@ -100,7 +121,87 @@ public:
 	);
 
 	UFUNCTION()
-	void DetectorOverlapEnd(
+	void PlayerDetectorOverlapEnd(
+		UPrimitiveComponent* overlappedComponent,
+		AActor* otherActor,
+		UPrimitiveComponent* otherComponent,
+		int32 otherBodyIndex
+	);
+
+	UFUNCTION()
+	void PlayerFollowOverlapEnd(
+		UPrimitiveComponent* overlappedComponent,
+		AActor* otherActor,
+		UPrimitiveComponent* otherComponent,
+		int32 otherBodyIndex
+	);
+
+	UFUNCTION()
+	void UpperLedgeDetectorOverlapBegin(
+		UPrimitiveComponent* overlappedComponent,
+		AActor* otherActor,
+		UPrimitiveComponent* otherComponent,
+		int32 otherBodyIndex,
+		bool fromSweep,
+		const FHitResult& sweepResults
+	);
+
+	UFUNCTION()
+	void UpperLedgeDetectorOverlapEnd(
+		UPrimitiveComponent* overlappedComponent,
+		AActor* otherActor,
+		UPrimitiveComponent* otherComponent,
+		int32 otherBodyIndex
+	);
+
+	UFUNCTION()
+	void LedgeDetectorOverlapBegin(
+		UPrimitiveComponent* overlappedComponent,
+		AActor* otherActor,
+		UPrimitiveComponent* otherComponent,
+		int32 otherBodyIndex,
+		bool fromSweep,
+		const FHitResult& sweepResults
+	);
+
+	UFUNCTION()
+	void LedgeDetectorOverlapEnd(
+		UPrimitiveComponent* overlappedComponent,
+		AActor* otherActor,
+		UPrimitiveComponent* otherComponent,
+		int32 otherBodyIndex
+	);
+
+	UFUNCTION()
+	void WallDetectorOverlapBegin(
+		UPrimitiveComponent* overlappedComponent,
+		AActor* otherActor,
+		UPrimitiveComponent* otherComponent,
+		int32 otherBodyIndex,
+		bool fromSweep,
+		const FHitResult& sweepResults
+	);
+
+	UFUNCTION()
+	void WallDetectorOverlapEnd(
+		UPrimitiveComponent* overlappedComponent,
+		AActor* otherActor,
+		UPrimitiveComponent* otherComponent,
+		int32 otherBodyIndex
+	);
+
+	UFUNCTION()
+	void AttackDetectorOverlapBegin(
+		UPrimitiveComponent* overlappedComponent,
+		AActor* otherActor,
+		UPrimitiveComponent* otherComponent,
+		int32 otherBodyIndex,
+		bool fromSweep,
+		const FHitResult& sweepResults
+	);
+
+	UFUNCTION()
+	void AttackDetectorOverlapEnd(
 		UPrimitiveComponent* overlappedComponent,
 		AActor* otherActor,
 		UPrimitiveComponent* otherComponent,
@@ -114,6 +215,10 @@ public:
 	void updateHP(int newHP);
 
 	void takeDamage(int damageAmount, float stunDuration, float stunForce);
+
+	void onLostInterestTimerTimeout();
+
+	void stopFollowing();
 
 	void stun(float durationInSeconds);
 

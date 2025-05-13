@@ -15,8 +15,23 @@
 AEnemy::AEnemy() {
 	PrimaryActorTick.bCanEverTick = true;
 
-	PlayerDetectorSphere = CreateDefaultSubobject<USphereComponent>(TEXT("PlayerDetectorSphere"));
-	PlayerDetectorSphere->SetupAttachment(RootComponent);
+	PlayerDetectionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("PlayerDetectionBox"));
+	PlayerDetectionBox->SetupAttachment(RootComponent);
+
+	PlayerFollowSphere = CreateDefaultSubobject<USphereComponent>(TEXT("PlayerFollowSphere"));
+	PlayerFollowSphere->SetupAttachment(RootComponent);
+
+	UpperLedgeDetectionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("UpperLedgeDetectionBox"));
+	UpperLedgeDetectionBox->SetupAttachment(RootComponent);
+
+	LedgeDetectionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LedgeDetectionBox"));
+	LedgeDetectionBox->SetupAttachment(RootComponent);
+
+	WallDetectionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("WallDetectionBox"));
+	WallDetectionBox->SetupAttachment(RootComponent);
+
+	AttackDetectionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackDetectionBox"));
+	AttackDetectionBox->SetupAttachment(RootComponent);
 
 	AttackCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackCollisionBox"));
 	AttackCollisionBox->SetupAttachment(RootComponent);
@@ -29,8 +44,24 @@ AEnemy::AEnemy() {
 void AEnemy::BeginPlay() {
 	Super::BeginPlay();
 
-	PlayerDetectorSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::DetectorOverlapBegin);
-	PlayerDetectorSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::DetectorOverlapEnd);
+	PlayerDetectionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::PlayerDetectorOverlapBegin);
+	PlayerDetectionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::PlayerDetectorOverlapEnd);
+
+	PlayerFollowSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::PlayerFollowOverlapEnd);
+
+	UpperLedgeDetectionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::UpperLedgeDetectorOverlapBegin);
+	UpperLedgeDetectionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::UpperLedgeDetectorOverlapEnd);
+
+	LedgeDetectionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::LedgeDetectorOverlapBegin);
+	LedgeDetectionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::LedgeDetectorOverlapEnd);
+
+	WallDetectionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::WallDetectorOverlapBegin);
+	WallDetectionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::WallDetectorOverlapEnd);
+
+	AttackDetectionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::AttackDetectorOverlapBegin);
+	AttackDetectionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::AttackDetectorOverlapEnd);
+	AttackDetectionBox->SetBoxExtent(AttackCollisionBox->GetUnscaledBoxExtent());
+	AttackDetectionBox->SetRelativeLocation(AttackCollisionBox->GetRelativeLocation());
 
 	DialogueComponent->SetVisibility(false);
 	updateHP(hitPoints);
@@ -43,30 +74,89 @@ void AEnemy::BeginPlay() {
 void AEnemy::Tick(float dt) {
 	Super::Tick(dt);
 
-	if (getIsAlive() && FollowTarget && !isStunned) {
-		float distX = FollowTarget->GetActorLocation().X - GetActorLocation().X;
-		if (fabs(distX) > stopDistanceToTarget && canMove) {
-			float dir = distX > 0 ? 1.0f : -1.0f;
-			AddMovementInput({ 1,0,0 }, dir);
-			updateDirection(dir);
-		} else {
-			if (FollowTarget->getIsAlive()) {
+	if (getIsAlive() && !isStunned) {
+		if (FollowTarget && FollowTarget->getIsAlive()) {
+
+			const float PLAYER_CLOSE_EPSILON = 5;
+			float minDist = AttackDetectionBox->GetScaledBoxExtent().X + AttackDetectionBox->GetRelativeLocation().X +
+				FollowTarget->GetCapsuleComponent()->GetScaledCapsuleRadius() - PLAYER_CLOSE_EPSILON;
+			float distX = FollowTarget->GetActorLocation().X - GetActorLocation().X;
+
+			if (fabs(distX) > minDist && canMove) {
+				float dir = distX > 0 ? 1.0f : -1.0f;
+				AddMovementInput({ 1,0,0 }, dir * GetCharacterMovement()->MaxWalkSpeed * dt);
+				updateDirection(dir);
+				const float LEVEL_HEIGHT_EPSILON = 30;
+				if ((isFacingUpperLedge && (FollowTarget->GetActorLocation().Z > GetActorLocation().Z + LEVEL_HEIGHT_EPSILON)) ||
+					(isOnLedge && (FollowTarget->GetActorLocation().Z >= GetActorLocation().Z)) ||
+					isFacingWall) {
+					Jump();
+				}
+			} else if (inAttackRange) {
 				attack();
 			}
+		} else {
+			auto dir = GetActorForwardVector();
+			AddMovementInput(dir, GetCharacterMovement()->MaxWalkSpeed * dt / 2);
 		}
 	}
 }
 
-void AEnemy::DetectorOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
+void AEnemy::PlayerDetectorOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
 	auto captain = Cast<ACaptain>(otherActor);
 	if (captain) {
-		FollowTarget = captain;
-		playDialogue(DialogueType::QUESTION);
+		GetWorldTimerManager().ClearTimer(lostInterestTimer);
+		if (!FollowTarget) {
+			FollowTarget = captain;
+			playDialogue(DialogueType::QUESTION);
+		}
 	}
 }
 
-void AEnemy::DetectorOverlapEnd(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex) {
-	FollowTarget = nullptr;
+void AEnemy::PlayerDetectorOverlapEnd(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex) {
+	GetWorldTimerManager().SetTimer(lostInterestTimer, this, &AEnemy::onLostInterestTimerTimeout, 1, false, lostInterestDelaySeconds);
+}
+
+void AEnemy::PlayerFollowOverlapEnd(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex) {
+	stopFollowing();
+}
+
+void AEnemy::UpperLedgeDetectorOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
+	isFacingUpperLedge = true;
+}
+
+void AEnemy::UpperLedgeDetectorOverlapEnd(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex) {
+	isFacingUpperLedge = false;
+}
+
+void AEnemy::LedgeDetectorOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
+	isOnLedge = false;
+}
+
+void AEnemy::LedgeDetectorOverlapEnd(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex) {
+	isOnLedge = true;
+	if (!FollowTarget) {
+		updateDirection(-GetActorForwardVector().X);
+	}
+}
+
+void AEnemy::WallDetectorOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
+	isFacingWall = true;
+	if (!FollowTarget) {
+		updateDirection(-GetActorForwardVector().X);
+	}
+}
+
+void AEnemy::WallDetectorOverlapEnd(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex) {
+	isFacingWall = false;
+}
+
+void AEnemy::AttackDetectorOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
+	inAttackRange = true;
+}
+
+void AEnemy::AttackDetectorOverlapEnd(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex) {
+	inAttackRange = false;
 }
 
 bool AEnemy::getIsAlive() {
@@ -102,6 +192,8 @@ void AEnemy::takeDamage(int damageAmount, float stunDuration, float stunForce) {
 
 		GetAnimInstance()->JumpToNode(FName("jumpDie"));
 		EnableAttackCollisionBox(false);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetSprite()->SetTranslucentSortPriority(0);
 		playDialogue(DialogueType::DEAD, true);
 	} else {
 		GetAnimInstance()->JumpToNode(FName("jumpTakeHit"));
@@ -114,6 +206,19 @@ void AEnemy::takeDamage(int damageAmount, float stunDuration, float stunForce) {
 			stunImpulse = stunImpulse * stunForce;
 			GetCharacterMovement()->AddImpulse(stunImpulse);
 		}
+	}
+}
+
+void AEnemy::onLostInterestTimerTimeout() {
+	stopFollowing();
+}
+
+void AEnemy::stopFollowing() {
+	FollowTarget = nullptr;
+	if (isFacingWall || isOnLedge) {
+		isFacingWall = false;
+		isOnLedge = false;
+		updateDirection(-GetActorForwardVector().X);
 	}
 }
 
@@ -165,11 +270,12 @@ void AEnemy::EnableAttackCollisionBox(bool enable) {
 	if (enable) {
 		AttackCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		AttackCollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+		AttackCollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Destructible, ECollisionResponse::ECR_Overlap);
 	} else {
 		AttackCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		AttackCollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+		AttackCollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Destructible, ECollisionResponse::ECR_Ignore);
 	}
-
 }
 
 void AEnemy::playDialogue(DialogueType type, bool force) {
