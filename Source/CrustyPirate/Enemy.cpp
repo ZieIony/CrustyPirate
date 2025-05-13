@@ -11,6 +11,7 @@
 #include <Components/SphereComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
 #include <Engine/TimerHandle.h>
+#include "Particle.h"
 
 AEnemy::AEnemy() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -60,8 +61,6 @@ void AEnemy::BeginPlay() {
 
 	AttackDetectionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::AttackDetectorOverlapBegin);
 	AttackDetectionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::AttackDetectorOverlapEnd);
-	AttackDetectionBox->SetBoxExtent(AttackCollisionBox->GetUnscaledBoxExtent());
-	AttackDetectionBox->SetRelativeLocation(AttackCollisionBox->GetRelativeLocation());
 
 	DialogueComponent->SetVisibility(false);
 	updateHP(hitPoints);
@@ -84,7 +83,7 @@ void AEnemy::Tick(float dt) {
 
 			if (fabs(distX) > minDist && canMove) {
 				float dir = distX > 0 ? 1.0f : -1.0f;
-				AddMovementInput({ 1,0,0 }, dir * GetCharacterMovement()->MaxWalkSpeed * dt);
+				AddMovementInput({ 1,0,0 }, dir);
 				updateDirection(dir);
 				const float LEVEL_HEIGHT_EPSILON = 30;
 				if ((isFacingUpperLedge && (FollowTarget->GetActorLocation().Z > GetActorLocation().Z + LEVEL_HEIGHT_EPSILON)) ||
@@ -97,7 +96,7 @@ void AEnemy::Tick(float dt) {
 			}
 		} else {
 			auto dir = GetActorForwardVector();
-			AddMovementInput(dir, GetCharacterMovement()->MaxWalkSpeed * dt / 2);
+			AddMovementInput(dir, 0.5f);
 		}
 	}
 }
@@ -180,7 +179,7 @@ void AEnemy::updateHP(int newHP) {
 	OnHealthChangedEvent.Broadcast(newHP);
 }
 
-void AEnemy::takeDamage(int damageAmount, float stunDuration, float stunForce) {
+void AEnemy::takeDamage(ACaptain* dealer, int damageAmount, float stunDuration, float stunForce) {
 	if (!getIsAlive())
 		return;
 
@@ -192,20 +191,19 @@ void AEnemy::takeDamage(int damageAmount, float stunDuration, float stunForce) {
 
 		GetAnimInstance()->JumpToNode(FName("jumpDie"));
 		EnableAttackCollisionBox(false);
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		GetSprite()->SetTranslucentSortPriority(0);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+		GetSprite()->SetTranslucentSortPriority(1);
 		playDialogue(DialogueType::DEAD, true);
 	} else {
 		GetAnimInstance()->JumpToNode(FName("jumpTakeHit"));
 		playDialogue(DialogueType::EXCLAMATION);
 		stun(stunDuration);
-		if (FollowTarget) {
-			auto direction = GetActorLocation().X - FollowTarget->GetActorLocation().X;
-			auto stunImpulse = FVector(direction, 0, abs(direction));
-			stunImpulse.Normalize();
-			stunImpulse = stunImpulse * stunForce;
-			GetCharacterMovement()->AddImpulse(stunImpulse);
-		}
+		FollowTarget = dealer;
+		auto direction = GetActorLocation().X - FollowTarget->GetActorLocation().X;
+		auto stunImpulse = FVector(direction, 0, abs(direction));
+		stunImpulse.Normalize();
+		stunImpulse = stunImpulse * stunForce;
+		GetCharacterMovement()->AddImpulse(stunImpulse);
 	}
 }
 
@@ -296,4 +294,12 @@ void AEnemy::playDialogue(DialogueType type, bool force) {
 
 void AEnemy::onDialogueFinishedPlaying() {
 	DialogueComponent->SetVisibility(false);
+}
+
+void AEnemy::SpawnRunDust() {
+	float maxSpeed = GetCharacterMovement()->GetMaxSpeed();
+	float currentSpeed = fabs(GetVelocity().X);
+	if (currentSpeed > maxSpeed / 2) {
+		GetWorld()->SpawnActor<AParticle>(DustClass, GetActorTransform());
+	}
 }

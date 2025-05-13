@@ -5,6 +5,7 @@
 #include "Captain.h"
 #include "CoreMinimal.h"
 #include <Delegates/DelegateCombinations.h>
+#include "Particle.h"
 
 #include "Enemy.generated.h"
 
@@ -103,6 +104,9 @@ public:
 	FTimerHandle lostInterestTimer;
 	FTimerHandle stunTimer;
 	FTimerHandle attackCooldownTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AParticle> DustClass;
 
 	AEnemy();
 
@@ -214,7 +218,7 @@ public:
 
 	void updateHP(int newHP);
 
-	void takeDamage(int damageAmount, float stunDuration, float stunForce);
+	void takeDamage(ACaptain* dealer, int damageAmount, float stunDuration, float stunForce);
 
 	void onLostInterestTimerTimeout();
 
@@ -247,4 +251,7 @@ public:
 
 	UFUNCTION()
 	void onDialogueFinishedPlaying();
+
+	UFUNCTION(BlueprintCallable)
+	void SpawnRunDust();
 };
