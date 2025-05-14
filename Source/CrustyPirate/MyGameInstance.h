@@ -37,6 +37,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	int CurrentLevelIndex = 0;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	int MapsCollected = 0;
+
 	void setPlayerHP(int newHP);
 
 	void collectCoins(int count);
@@ -44,6 +47,8 @@ public:
 	void collectDiamonds(int count);
 
 	void changeLevel(int newLevelIndex);
+
+	void collectMap();
 
 	UFUNCTION(BlueprintCallable)
 	void restartGame();

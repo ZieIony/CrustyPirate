@@ -33,4 +33,6 @@ public:
 	void setCoins(int count);
 	void setDiamonds(int count);
 	void setLevel(int index);
+	void setKeys(int keys);
+	void setMaps(int maps);
 };

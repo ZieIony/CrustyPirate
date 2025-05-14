@@ -23,6 +23,10 @@ void UMyGameInstance::changeLevel(int newLevelIndex) {
 	UGameplayStatics::OpenLevel(GetWorld(), FName(levels[CurrentLevelIndex]));
 }
 
+void UMyGameInstance::collectMap() {
+	MapsCollected++;
+}
+
 void UMyGameInstance::restartGame() {
 	PlayerHP = 100;
 	DiamondsCollected = 0;

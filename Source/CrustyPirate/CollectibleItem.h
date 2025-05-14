@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include <PaperFlipbookComponent.h>
 #include <Components/CapsuleComponent.h>
+#include <Sound/SoundBase.h>
 
 #include "CollectibleItem.generated.h"
 
@@ -14,7 +15,9 @@ enum class CollectibleType:uint8 {
 	Coin,
 	Diamond,
 	Potion,
-	DoubleJumpUpgrade
+	DoubleJumpUpgrade,
+	Key,
+	Map
 };
 
 UCLASS()
@@ -34,6 +37,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int Value;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* CollectItemSound;
 
 	// Sets default values for this actor's properties
 	ACollectibleItem();

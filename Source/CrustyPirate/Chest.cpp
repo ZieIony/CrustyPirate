@@ -70,7 +70,10 @@ void AChest::unlock() {
 
 void AChest::OverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
 	if (auto captain = Cast<ACaptain>(otherActor)) {
-		unlock();
+		if (captain->KeysOwned > 0) {
+			captain->KeysOwned--;
+			unlock();
+		}
 	}
 }
 

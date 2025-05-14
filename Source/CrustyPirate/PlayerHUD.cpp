@@ -22,3 +22,13 @@ void UPlayerHUD::setLevel(int index) {
 	FString text = FString::Printf(TEXT("level: %d"), index);
 	LevelText->SetText(FText::FromString(text));
 }
+
+void UPlayerHUD::setKeys(int keys) {
+	FString text = FString::Printf(TEXT("keys: %d"), keys);
+	//KeysText->SetText(FText::FromString(text));
+}
+
+void UPlayerHUD::setMaps(int maps) {
+	FString text = FString::Printf(TEXT("keys: %d"), maps);
+	//KeysText->SetText(FText::FromString(text));
+}

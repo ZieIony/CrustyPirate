@@ -3,6 +3,7 @@
 
 #include "CollectibleItem.h"
 #include "Captain.h"
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 ACollectibleItem::ACollectibleItem()
@@ -42,6 +43,8 @@ void ACollectibleItem::OverlapBegin(
 ) {
 	ACaptain* player = Cast<ACaptain>(otherActor);
 	if (player && player->tryCollectItem(*this)) {
+		if(CollectItemSound)
+			UGameplayStatics::PlaySound2D(GetWorld(), CollectItemSound);
 		Destroy();
 	}
 }

@@ -13,7 +13,6 @@
 #include "PlayerHUD.h"
 #include <Engine/TimerHandle.h>
 #include <PaperZDAnimInstance.h>
-#include <Sound/SoundBase.h>
 
 #include "Captain.generated.h"
 
@@ -107,6 +106,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int CurrentHitPoints = MaxHitPoints;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int KeysOwned = 0;
+
 	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate;
 	FTimerHandle stunTimer;
 
@@ -125,9 +127,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UMyGameInstance* MyGameInstance;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USoundBase* CollectItemSound;
 
 	ACaptain();
 
