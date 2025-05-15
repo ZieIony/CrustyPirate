@@ -17,7 +17,8 @@ enum class CollectibleType:uint8 {
 	Potion,
 	DoubleJumpUpgrade,
 	Key,
-	Map
+	Map,
+	Sword
 };
 
 UCLASS()

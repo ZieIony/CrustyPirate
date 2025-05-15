@@ -13,6 +13,7 @@
 #include "PlayerHUD.h"
 #include <Engine/TimerHandle.h>
 #include <PaperZDAnimInstance.h>
+#include "Bullet.h"
 
 #include "Captain.generated.h"
 
@@ -84,6 +85,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPaperZDAnimSequence* AirAttack2AnimSequence;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPaperZDAnimSequence* ThrowAnimSequence;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ABullet> SwordClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USceneComponent* SwordSpawnLocation;
 #pragma endregion
 
 	bool canMove = true;
@@ -108,6 +118,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int KeysOwned = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int SwordsOwned = 0;
 
 	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate;
 	FTimerHandle stunTimer;
@@ -147,6 +160,13 @@ public:
 	void jumpEnded(const FInputActionValue& value);
 
 	void attack(const FInputActionValue& value);
+
+	void attackMelee();
+
+	void attackRanged();
+
+	UFUNCTION(BlueprintCallable)
+	void ThrowSword();
 
 	void onAttackOverrideAnimEnd(bool completed);
 

@@ -7,6 +7,8 @@
 #include "Captain.h"
 #include <Kismet/GameplayStatics.h>
 #include "Enemy.h"
+#include "Destructible.h"
+#include "Turret.h"
 
 // Sets default values
 ABullet::ABullet()
@@ -41,10 +43,15 @@ void ABullet::OverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* oth
 	if (ACaptain* player = Cast<ACaptain>(otherActor)){
 		player->takeDamage(attackDamage, attackStunDuration, attackStunForce, this);
 	} else if (AEnemy* enemy = Cast<AEnemy>(otherActor)) {
-		enemy->takeDamage(attackDamage, attackStunDuration, attackStunForce, this);
+		enemy->takeDamage(attackDamage, attackStunDuration, attackStunForce, Owner);
+	} else if (ATurret* turret = Cast<ATurret>(otherActor)) {
+		turret->takeDamage(attackDamage);
+	} else if (ADestructible* destructible = Cast<ADestructible>(otherActor)) {
+		destructible->takeDamage(attackDamage);
 	}
 	UGameplayStatics::PlaySound2D(GetWorld(), HitSound);
-	GetWorld()->SpawnActor<AParticle>(ParticleClass, GetActorLocation(), FRotator::ZeroRotator);
+	if(ParticleClass)
+		GetWorld()->SpawnActor<AParticle>(ParticleClass, GetActorLocation(), FRotator::ZeroRotator);
 	Destroy();
 }
 

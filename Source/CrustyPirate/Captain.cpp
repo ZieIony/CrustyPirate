@@ -24,6 +24,9 @@ ACaptain::ACaptain() {
 	DialogueComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Dialogue"));
 	DialogueComponent->SetupAttachment(RootComponent);
 	DialogueComponent->OnFinishedPlaying.AddDynamic(this, &ACaptain::onDialogueFinishedPlaying);
+
+	SwordSpawnLocation = CreateDefaultSubobject<USceneComponent>(TEXT("SwordSpawnLocation"));
+	SwordSpawnLocation->SetupAttachment(RootComponent);
 }
 
 void ACaptain::BeginPlay() {
@@ -136,23 +139,43 @@ void ACaptain::attack(const FInputActionValue& value) {
 
 		GetWorldTimerManager().ClearTimer(idleTimer);
 		GetWorldTimerManager().SetTimer(idleTimer, this, &ACaptain::onIdleTimerTimeout, 1, false, IdleDelay);
-		if (GetVelocity().Z != 0) {
-			auto animation = ((float)rand() / RAND_MAX) > 0.5f ? AirAttackAnimSequence : AirAttack2AnimSequence;
-			GetAnimInstance()->PlayAnimationOverride(animation, FName("AttackSlot"), 1, 0, OnAttackOverrideEndDelegate);
+
+		if (SwordsOwned > 0) {
+			attackRanged();
 		} else {
-			auto animation = [&] {
-				float index = (float)rand() / RAND_MAX;
-				if (index < 0.333f) {
-					return AttackAnimSequence;
-				} else if (index < 0.667f) {
-					return Attack2AnimSequence;
-				} else {
-					return Attack3AnimSequence;
-				}
-			}();
-			GetAnimInstance()->PlayAnimationOverride(animation, FName("AttackSlot"), 1, 0, OnAttackOverrideEndDelegate);
+			attackMelee();
 		}
 	}
+}
+
+void ACaptain::attackMelee() {
+	if (GetVelocity().Z != 0) {
+		auto animation = ((float)rand() / RAND_MAX) > 0.5f ? AirAttackAnimSequence : AirAttack2AnimSequence;
+		GetAnimInstance()->PlayAnimationOverride(animation, FName("attackSlot"), 1, 0, OnAttackOverrideEndDelegate);
+	} else {
+		auto animation = [&] {
+			float index = (float)rand() / RAND_MAX;
+			if (index < 0.333f) {
+				return AttackAnimSequence;
+			} else if (index < 0.667f) {
+				return Attack2AnimSequence;
+			} else {
+				return Attack3AnimSequence;
+			}
+		}();
+		GetAnimInstance()->PlayAnimationOverride(animation, FName("attackSlot"), 1, 0, OnAttackOverrideEndDelegate);
+	}
+}
+
+void ACaptain::attackRanged() {
+	GetAnimInstance()->PlayAnimationOverride(ThrowAnimSequence, FName("attackSlot"), 1, 0, OnAttackOverrideEndDelegate);
+}
+
+void ACaptain::ThrowSword() {
+	SwordsOwned--;
+	auto spawnParameters = FActorSpawnParameters();
+	spawnParameters.Owner = this;
+	GetWorld()->SpawnActor<ABullet>(SwordClass, SwordSpawnLocation->GetComponentLocation(), GetActorRotation(), spawnParameters);
 }
 
 void ACaptain::onAttackOverrideAnimEnd(bool completed) {
@@ -269,6 +292,9 @@ bool ACaptain::tryCollectItem(ACollectibleItem& item) {
 	case CollectibleType::Map:
 		MyGameInstance->collectMap();
 		PlayerHUDWidget->setKeys(KeysOwned);
+		break;
+	case CollectibleType::Sword:
+		SwordsOwned += item.Value;
 		break;
 	}
 	return true;

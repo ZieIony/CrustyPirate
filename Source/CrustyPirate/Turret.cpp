@@ -48,7 +48,9 @@ void ATurret::onAttackCooldownTimerTimeout() {
 
 void ATurret::SpawnBullet() {
 	GetWorld()->SpawnActor<AParticle>(ParticleClass, BulletSpawnLocation->GetComponentLocation(), GetActorRotation());
-	GetWorld()->SpawnActor<ABullet>(BulletClass, BulletSpawnLocation->GetComponentLocation(), GetActorRotation());
+	auto spawnParameters = FActorSpawnParameters();
+	spawnParameters.Owner = this;
+	GetWorld()->SpawnActor<ABullet>(BulletClass, BulletSpawnLocation->GetComponentLocation(), GetActorRotation(), spawnParameters);
 }
 
 void ATurret::takeDamage(int damageAmount) {
