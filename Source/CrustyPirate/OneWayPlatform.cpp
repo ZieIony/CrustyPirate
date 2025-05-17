@@ -20,7 +20,7 @@ void AOneWayPlatform::Tick(float dt) {
 void AOneWayPlatform::updateCollision() {
 	auto player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	float playerBottom = player->GetActorLocation().Z - player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-	float platformTop = GetActorLocation().Z + 32;
+	float platformTop = GetActorLocation().Z + 30;
 	auto response = [&] {
 		if (playerBottom > platformTop) {
 			return ECollisionResponse::ECR_Block;
@@ -29,5 +29,4 @@ void AOneWayPlatform::updateCollision() {
 		}
 	}();
 	GetRenderComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, response);
-	GetRenderComponent()->SetVisibility(playerBottom > platformTop);
 }
