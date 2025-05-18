@@ -23,10 +23,12 @@ void UMyGameInstance::collectDiamonds(int count) {
 	fireOnPlayerInfoChanged();
 }
 
-void UMyGameInstance::changeLevel(int newLevelIndex) {
-	if (newLevelIndex < 0 || newLevelIndex>levels.size() - 1)
-		return;
-	CurrentLevelIndex = newLevelIndex;
+void UMyGameInstance::finishLevel() {
+	OnLevelFinishedEvent.Broadcast();
+}
+
+void UMyGameInstance::nextLevel() {
+	CurrentLevelIndex++;
 	UGameplayStatics::OpenLevel(GetWorld(), FName(levels[CurrentLevelIndex]));
 }
 
@@ -43,5 +45,6 @@ void UMyGameInstance::restartGame() {
 
 	fireOnPlayerInfoChanged();
 
-	changeLevel(0);
+	CurrentLevelIndex = 0;
+	UGameplayStatics::OpenLevel(GetWorld(), FName(levels[CurrentLevelIndex]));
 }

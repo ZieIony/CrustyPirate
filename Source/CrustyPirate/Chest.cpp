@@ -66,6 +66,8 @@ void AChest::unlock() {
 			);
 		}
 	}
+
+	OnChestOpenedEvent.Broadcast();
 }
 
 void AChest::OverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {

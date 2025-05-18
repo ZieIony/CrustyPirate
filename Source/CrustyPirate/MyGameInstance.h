@@ -10,6 +10,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnPlayerInfoChanged, int, Health, int, Coins, int, Diamonds);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLevelFinished);
+
 /**
  * 
  */
@@ -20,7 +22,9 @@ class CRUSTYPIRATE_API UMyGameInstance : public UGameInstance
 
 	static inline std::vector<FString> levels = {
 		FString(TEXT("Level_1")),
-		FString(TEXT("Level_2"))
+		FString(TEXT("Level_2")),
+		FString(TEXT("Level_3")),
+		FString(TEXT("Level_4"))
 	};
 	
 public:
@@ -45,6 +49,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerInfoChanged OnPlayerInfoChangedEvent;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnLevelFinished OnLevelFinishedEvent;
+
 	void fireOnPlayerInfoChanged();
 
 	void setPlayerHP(int newHP);
@@ -53,7 +60,10 @@ public:
 
 	void collectDiamonds(int count);
 
-	void changeLevel(int newLevelIndex);
+	void finishLevel();
+
+	UFUNCTION(BlueprintCallable)
+	void nextLevel();
 
 	void collectMap();
 

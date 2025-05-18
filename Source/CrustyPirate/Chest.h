@@ -12,6 +12,8 @@ class UBoxComponent;
 class UPaperFlipbook;
 class USoundBase;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChestOpened);
+
 UCLASS()
 class CRUSTYPIRATE_API AChest : public AActor
 {
@@ -46,6 +48,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float LaunchContentsForce = 1;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnChestOpened OnChestOpenedEvent;
 
 	// Sets default values for this actor's properties
 	AChest();

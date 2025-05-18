@@ -16,8 +16,6 @@ ALevelExit::ALevelExit() {
 
 	DoorFlipbook = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("DoorFlipbook"));
 	DoorFlipbook->SetupAttachment(RootComponent);
-	DoorFlipbook->SetPlayRate(0.0f);
-	DoorFlipbook->SetLooping(false);
 }
 
 // Called when the game starts or when spawned
@@ -26,7 +24,7 @@ void ALevelExit::BeginPlay() {
 
 	BoxComp->OnComponentBeginOverlap.AddDynamic(this, &ALevelExit::OverlapBegin);
 
-	DoorFlipbook->SetPlaybackPosition(0.0f, false);
+	DoorFlipbook->SetLooping(DoorFlipbook->GetPlayRate() == 0.0f ? false : true);
 }
 
 // Called every frame
@@ -41,8 +39,7 @@ void ALevelExit::OverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* 
 		if (IsActive) {
 			player->deactivate();
 			IsActive = false;
-			DoorFlipbook->SetPlayRate(1.0f);
-			DoorFlipbook->PlayFromStart();
+			DoorFlipbook->Play();
 			UGameplayStatics::PlaySound2D(GetWorld(), PlayerEnterSound);
 			GetWorldTimerManager().SetTimer(delayTimer, this, &ALevelExit::onDelayTimerTimeout, 1.0f, false, delayTimeSec);
 		}
@@ -52,7 +49,7 @@ void ALevelExit::OverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* 
 void ALevelExit::onDelayTimerTimeout() {
 	auto gameInstance = Cast<UMyGameInstance>(GetGameInstance());
 	if (gameInstance) {
-		gameInstance->changeLevel(LevelIndex);
+		gameInstance->finishLevel();
 	}
 
 }
