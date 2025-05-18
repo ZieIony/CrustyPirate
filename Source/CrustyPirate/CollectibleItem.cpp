@@ -24,6 +24,8 @@ void ACollectibleItem::BeginPlay()
 	Super::BeginPlay();
 	
 	CapsuleComp->OnComponentBeginOverlap.AddDynamic(this, &ACollectibleItem::OverlapBegin);
+	auto location = GetActorLocation();
+	SetActorLocation({ round(location.X / 64) * 64, location.Y, round(location.Z / 64) * 64 });
 }
 
 // Called every frame
