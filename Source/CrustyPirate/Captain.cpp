@@ -23,7 +23,6 @@ ACaptain::ACaptain() {
 
 	DialogueComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Dialogue"));
 	DialogueComponent->SetupAttachment(RootComponent);
-	DialogueComponent->OnFinishedPlaying.AddDynamic(this, &ACaptain::onDialogueFinishedPlaying);
 
 	SwordSpawnLocation = CreateDefaultSubobject<USceneComponent>(TEXT("SwordSpawnLocation"));
 	SwordSpawnLocation->SetupAttachment(RootComponent);
@@ -45,26 +44,16 @@ void ACaptain::BeginPlay() {
 	OnAttackOverrideEndDelegate.BindUObject(this, &ACaptain::onAttackOverrideAnimEnd);
 	AttackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &ACaptain::AttackBoxOverlapBegin);
 	EnableAttackCollisionBox(false);
+
 	DialogueComponent->SetVisibility(false);
+	DialogueComponent->SetLooping(false);
+	DialogueComponent->OnFinishedPlaying.AddDynamic(this, &ACaptain::onDialogueFinishedPlaying);
 
 	MyGameInstance = Cast<UMyGameInstance>(GetGameInstance());
 	if (MyGameInstance) {
 		CurrentHitPoints = MyGameInstance->PlayerHP;
 		if (MyGameInstance->IsDoubleJumpUnlocked) {
 			unlockDoubleJump();
-		}
-	}
-
-	if (PlayerHUDClass) {
-		PlayerHUDWidget = CreateWidget<UPlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0), PlayerHUDClass);
-		if (PlayerHUDWidget) {
-			PlayerHUDWidget->AddToPlayerScreen();
-			PlayerHUDWidget->setHP(CurrentHitPoints);
-			PlayerHUDWidget->setCoins(MyGameInstance->CoinsCollected);
-			PlayerHUDWidget->setDiamonds(MyGameInstance->DiamondsCollected);
-			PlayerHUDWidget->setLevel(MyGameInstance->CurrentLevelIndex);
-			PlayerHUDWidget->setKeys(0);
-			PlayerHUDWidget->setMaps(MyGameInstance->MapsCollected);
 		}
 	}
 
@@ -241,9 +230,6 @@ void ACaptain::takeDamage(int damageAmount, float stunDuration, float stunForce,
 void ACaptain::updateHP(int newHP) {
 	CurrentHitPoints = newHP;
 	MyGameInstance->setPlayerHP(CurrentHitPoints);
-	if (PlayerHUDWidget) {
-		PlayerHUDWidget->setHP(CurrentHitPoints);
-	}
 }
 
 void ACaptain::stun(float durationInSeconds) {
@@ -276,22 +262,18 @@ bool ACaptain::tryCollectItem(ACollectibleItem& item) {
 		break;
 	case CollectibleType::Coin:
 		MyGameInstance->collectCoins(item.Value);
-		PlayerHUDWidget->setCoins(MyGameInstance->CoinsCollected);
 		break;
 	case CollectibleType::Diamond:
 		MyGameInstance->collectDiamonds(item.Value);
-		PlayerHUDWidget->setDiamonds(MyGameInstance->DiamondsCollected);
 		break;
 	case CollectibleType::DoubleJumpUpgrade:
 		unlockDoubleJump();
 		break;
 	case CollectibleType::Key:
 		KeysOwned++;
-		PlayerHUDWidget->setKeys(KeysOwned);
 		break;
 	case CollectibleType::Map:
 		MyGameInstance->collectMap();
-		PlayerHUDWidget->setKeys(KeysOwned);
 		break;
 	case CollectibleType::Sword:
 		SwordsOwned += item.Value;
@@ -331,7 +313,6 @@ void ACaptain::playDialogue(DialogueType type, bool force) {
 		DialogueComponent->SetFlipbook(ExclamationFlipbook);
 	}
 	DialogueComponent->SetVisibility(true);
-	DialogueComponent->SetLooping(false);
 	DialogueComponent->PlayFromStart();
 }
 

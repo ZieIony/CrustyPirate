@@ -18,7 +18,7 @@ class CRUSTYPIRATE_API UPlayerHUD : public UUserWidget
 	
 public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UTextBlock* HPText;
+	UTextBlock* HealthText;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* CoinsText;
@@ -26,13 +26,12 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* DiamondsText;
 
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UTextBlock* LevelText;
+	UFUNCTION(BlueprintCallable)
+	void setHealth(int newHP);
 
-	void setHP(int newHP);
+	UFUNCTION(BlueprintCallable)
 	void setCoins(int count);
+
+	UFUNCTION(BlueprintCallable)
 	void setDiamonds(int count);
-	void setLevel(int index);
-	void setKeys(int keys);
-	void setMaps(int maps);
 };

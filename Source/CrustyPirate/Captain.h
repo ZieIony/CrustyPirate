@@ -132,12 +132,6 @@ public:
 
 	FTimerHandle idleTimer;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UPlayerHUD> PlayerHUDClass;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UPlayerHUD* PlayerHUDWidget;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UMyGameInstance* MyGameInstance;
 

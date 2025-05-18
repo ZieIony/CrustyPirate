@@ -8,6 +8,8 @@
 
 #include "MyGameInstance.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnPlayerInfoChanged, int, Health, int, Coins, int, Diamonds);
+
 /**
  * 
  */
@@ -39,6 +41,11 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	int MapsCollected = 0;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPlayerInfoChanged OnPlayerInfoChangedEvent;
+
+	void fireOnPlayerInfoChanged();
 
 	void setPlayerHP(int newHP);
 

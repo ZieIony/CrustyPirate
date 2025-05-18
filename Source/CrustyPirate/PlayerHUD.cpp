@@ -3,9 +3,9 @@
 
 #include "PlayerHUD.h"
 
-void UPlayerHUD::setHP(int newHP) {
+void UPlayerHUD::setHealth(int newHP) {
 	FString text = FString::Printf(TEXT("HP: %d"), newHP);
-	HPText->SetText(FText::FromString(text));
+	HealthText->SetText(FText::FromString(text));
 }
 
 void UPlayerHUD::setCoins(int count) {
@@ -16,19 +16,4 @@ void UPlayerHUD::setCoins(int count) {
 void UPlayerHUD::setDiamonds(int count) {
 	FString text = FString::Printf(TEXT("diamonds: %d"), count);
 	DiamondsText->SetText(FText::FromString(text));
-}
-
-void UPlayerHUD::setLevel(int index) {
-	FString text = FString::Printf(TEXT("level: %d"), index);
-	LevelText->SetText(FText::FromString(text));
-}
-
-void UPlayerHUD::setKeys(int keys) {
-	FString text = FString::Printf(TEXT("keys: %d"), keys);
-	//KeysText->SetText(FText::FromString(text));
-}
-
-void UPlayerHUD::setMaps(int maps) {
-	FString text = FString::Printf(TEXT("keys: %d"), maps);
-	//KeysText->SetText(FText::FromString(text));
 }

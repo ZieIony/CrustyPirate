@@ -39,7 +39,6 @@ AEnemy::AEnemy() {
 
 	DialogueComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Dialogue"));
 	DialogueComponent->SetupAttachment(RootComponent);
-	DialogueComponent->OnFinishedPlaying.AddDynamic(this, &AEnemy::onDialogueFinishedPlaying);
 }
 
 void AEnemy::BeginPlay() {
@@ -63,6 +62,9 @@ void AEnemy::BeginPlay() {
 	AttackDetectionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::AttackDetectorOverlapEnd);
 
 	DialogueComponent->SetVisibility(false);
+	DialogueComponent->SetLooping(false);
+	DialogueComponent->OnFinishedPlaying.AddDynamic(this, &AEnemy::onDialogueFinishedPlaying);
+	
 	updateHP(hitPoints);
 
 	OnAttackOverrideEndDelegate.BindUObject(this, &AEnemy::onAttackOverrideAnimEnd);
@@ -291,7 +293,6 @@ void AEnemy::playDialogue(DialogueType type, bool force) {
 		DialogueComponent->SetFlipbook(ExclamationFlipbook);
 	}
 	DialogueComponent->SetVisibility(true);
-	DialogueComponent->SetLooping(false);
 	DialogueComponent->PlayFromStart();
 }
 
