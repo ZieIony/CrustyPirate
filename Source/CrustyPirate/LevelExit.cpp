@@ -14,8 +14,8 @@ ALevelExit::ALevelExit() {
 	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
 	SetRootComponent(BoxComp);
 
-	DoorFlipbook = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("DoorFlipbook"));
-	DoorFlipbook->SetupAttachment(RootComponent);
+	Flipbook = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Flipbook"));
+	Flipbook->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -23,8 +23,6 @@ void ALevelExit::BeginPlay() {
 	Super::BeginPlay();
 
 	BoxComp->OnComponentBeginOverlap.AddDynamic(this, &ALevelExit::OverlapBegin);
-
-	DoorFlipbook->SetLooping(DoorFlipbook->GetPlayRate() == 0.0f ? false : true);
 }
 
 // Called every frame
@@ -35,14 +33,10 @@ void ALevelExit::Tick(float DeltaTime) {
 
 void ALevelExit::OverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent, int32 otherBodyIndex, bool fromSweep, const FHitResult& sweepResults) {
 	ACaptain* player = Cast<ACaptain>(otherActor);
-	if (player && player->getIsAlive()) {
-		if (IsActive) {
-			player->deactivate();
-			IsActive = false;
-			DoorFlipbook->Play();
-			UGameplayStatics::PlaySound2D(GetWorld(), PlayerEnterSound);
-			GetWorldTimerManager().SetTimer(delayTimer, this, &ALevelExit::onDelayTimerTimeout, 1.0f, false, delayTimeSec);
-		}
+	if (player && player->getIsAlive() && player->isActive && isActive) {
+		player->deactivate();
+		UGameplayStatics::PlaySound2D(GetWorld(), PlayerEnterSound);
+		GetWorldTimerManager().SetTimer(delayTimer, this, &ALevelExit::onDelayTimerTimeout, 1.0f, false, delayTimeSec);
 	}
 }
 
@@ -52,5 +46,10 @@ void ALevelExit::onDelayTimerTimeout() {
 		gameInstance->finishLevel();
 	}
 
+}
+
+void ALevelExit::activate() {
+	isActive = true;
+	Flipbook->SetFlipbook(ActiveFlipbook);
 }
 

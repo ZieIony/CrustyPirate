@@ -197,6 +197,7 @@ void AEnemy::takeDamage(int damageAmount, float stunDuration, float stunForce, A
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 		GetSprite()->SetTranslucentSortPriority(1);
 		playDialogue(DialogueType::DEAD, true);
+		spawnLoot();
 	} else {
 		GetAnimInstance()->JumpToNode(FName("jumpTakeHit"));
 		playDialogue(DialogueType::EXCLAMATION);
@@ -209,6 +210,29 @@ void AEnemy::takeDamage(int damageAmount, float stunDuration, float stunForce, A
 		stunImpulse.Normalize();
 		stunImpulse = stunImpulse * stunForce;
 		GetCharacterMovement()->AddImpulse(stunImpulse);
+	}
+}
+
+void AEnemy::spawnLoot() {
+	if (LootClass) {
+		for (int i = 0; i < LootCount; i++) {
+			ACollectibleItem::spawn(
+				GetWorld(),
+				LootClass,
+				GetActorLocation(),
+				LaunchLootForce
+			);
+		}
+	}
+	if (LootClass2) {
+		for (int i = 0; i < LootCount2; i++) {
+			ACollectibleItem::spawn(
+				GetWorld(),
+				LootClass2,
+				GetActorLocation(),
+				LaunchLootForce
+			);
+		}
 	}
 }
 

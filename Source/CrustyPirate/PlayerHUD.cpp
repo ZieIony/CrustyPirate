@@ -3,17 +3,10 @@
 
 #include "PlayerHUD.h"
 
-void UPlayerHUD::setHealth(int newHP) {
-	FString text = FString::Printf(TEXT("HP: %d"), newHP);
-	HealthText->SetText(FText::FromString(text));
-}
-
-void UPlayerHUD::setCoins(int count) {
-	FString text = FString::Printf(TEXT("coins: %d"), count);
-	CoinsText->SetText(FText::FromString(text));
-}
-
-void UPlayerHUD::setDiamonds(int count) {
-	FString text = FString::Printf(TEXT("diamonds: %d"), count);
-	DiamondsText->SetText(FText::FromString(text));
+void UPlayerHUD::setPlayerInfo(int health, int coins, int diamonds, int keys, int swords) {
+	HealthText->SetText(FText::FromString(FString::Printf(TEXT("%d"), health)));
+	CoinsText->SetText(FText::FromString(FString::Printf(TEXT("%d"), coins)));
+	DiamondsText->SetText(FText::FromString(FString::Printf(TEXT("%d"), diamonds)));
+	KeysText->SetText(FText::FromString(FString::Printf(TEXT("%d"), keys)));
+	SwordsText->SetText(FText::FromString(FString::Printf(TEXT("%d"), swords)));
 }

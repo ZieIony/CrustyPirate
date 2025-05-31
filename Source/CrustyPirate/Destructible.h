@@ -34,6 +34,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int CurrentHitPoints = TotalHitPoints;
 
+#pragma region contents
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACollectibleItem> ContentsClass;
 
@@ -48,6 +49,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float LaunchContentsForce = 1;
+#pragma endregion
 
 #pragma region destructible pieces
 	UPROPERTY(EditAnywhere)

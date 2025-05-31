@@ -26,12 +26,12 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* DiamondsText;
 
-	UFUNCTION(BlueprintCallable)
-	void setHealth(int newHP);
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UTextBlock* KeysText;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UTextBlock* SwordsText;
 
 	UFUNCTION(BlueprintCallable)
-	void setCoins(int count);
-
-	UFUNCTION(BlueprintCallable)
-	void setDiamonds(int count);
+	void setPlayerInfo(int health, int coins, int diamonds, int keys, int swords);
 };

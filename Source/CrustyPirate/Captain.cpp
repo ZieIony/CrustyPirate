@@ -8,6 +8,7 @@
 #include "Destructible.h"
 #include "Chest.h"
 #include "Turret.h"
+#include "LevelExit.h"
 
 ACaptain::ACaptain() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -51,7 +52,6 @@ void ACaptain::BeginPlay() {
 
 	MyGameInstance = Cast<UMyGameInstance>(GetGameInstance());
 	if (MyGameInstance) {
-		CurrentHitPoints = MyGameInstance->PlayerHP;
 		if (MyGameInstance->IsDoubleJumpUnlocked) {
 			unlockDoubleJump();
 		}
@@ -84,12 +84,12 @@ void ACaptain::SetupPlayerInputComponent(UInputComponent* playerInputComponent) 
 }
 
 bool ACaptain::getIsAlive() {
-	return CurrentHitPoints > 0;
+	return MyGameInstance->PlayerHP > 0;
 }
 
 void ACaptain::move(const FInputActionValue& value) {
 	float moveActionValue = value.Get<float>();
-	if (getIsAlive() && canMove && !isStunned) {
+	if (getIsAlive() && canMove && !isStunned && fabs(moveActionValue) >= 0.1) {
 		FVector dir = { 1,0,0 };
 		AddMovementInput(dir, moveActionValue);
 		updateDirection(moveActionValue);
@@ -101,10 +101,10 @@ void ACaptain::move(const FInputActionValue& value) {
 void ACaptain::updateDirection(float moveDirection) {
 	FRotator currentRotation = Controller->GetControlRotation();
 	auto dialogueLocation = DialogueComponent->GetRelativeLocation();
-	if (moveDirection < 0) {
+	if (moveDirection < -0.1) {
 		Controller->SetControlRotation({ currentRotation.Pitch,180,currentRotation.Roll });
 		DialogueComponent->SetRelativeLocation(FVector(-fabs(dialogueLocation.X), dialogueLocation.Y, dialogueLocation.Z));
-	} else if (moveDirection > 0) {
+	} else if (moveDirection > 0.1) {
 		Controller->SetControlRotation({ currentRotation.Pitch,0,currentRotation.Roll });
 		DialogueComponent->SetRelativeLocation(FVector(fabs(dialogueLocation.X), dialogueLocation.Y, dialogueLocation.Z));
 	}
@@ -129,7 +129,7 @@ void ACaptain::attack(const FInputActionValue& value) {
 		GetWorldTimerManager().ClearTimer(idleTimer);
 		GetWorldTimerManager().SetTimer(idleTimer, this, &ACaptain::onIdleTimerTimeout, 1, false, IdleDelay);
 
-		if (SwordsOwned > 0) {
+		if (MyGameInstance->SwordsOwned > 0) {
 			attackRanged();
 		} else {
 			attackMelee();
@@ -161,7 +161,7 @@ void ACaptain::attackRanged() {
 }
 
 void ACaptain::ThrowSword() {
-	SwordsOwned--;
+	MyGameInstance->useSword();
 	auto spawnParameters = FActorSpawnParameters();
 	spawnParameters.Owner = this;
 	GetWorld()->SpawnActor<ABullet>(SwordClass, SwordSpawnLocation->GetComponentLocation(), GetActorRotation(), spawnParameters);
@@ -203,9 +203,9 @@ void ACaptain::takeDamage(int damageAmount, float stunDuration, float stunForce,
 		return;
 
 	EnableAttackCollisionBox(false);
-	updateHP(std::max(0, CurrentHitPoints - damageAmount));
+	updateHP(std::max(0, MyGameInstance->PlayerHP - damageAmount));
 
-	if (CurrentHitPoints == 0) {
+	if (MyGameInstance->PlayerHP == 0) {
 		canMove = false;
 		canAttack = false;
 
@@ -228,8 +228,7 @@ void ACaptain::takeDamage(int damageAmount, float stunDuration, float stunForce,
 }
 
 void ACaptain::updateHP(int newHP) {
-	CurrentHitPoints = newHP;
-	MyGameInstance->setPlayerHP(CurrentHitPoints);
+	MyGameInstance->setPlayerHP(newHP);
 }
 
 void ACaptain::stun(float durationInSeconds) {
@@ -256,9 +255,9 @@ bool ACaptain::tryCollectItem(ACollectibleItem& item) {
 
 	switch (item.Type) {
 	case CollectibleType::Potion:
-		if (CurrentHitPoints == MaxHitPoints)
+		if (MyGameInstance->PlayerHP == MaxHitPoints)
 			return false;
-		updateHP(std::min(CurrentHitPoints + item.Value, MaxHitPoints));
+		updateHP(std::min(MyGameInstance->PlayerHP + item.Value, MaxHitPoints));
 		break;
 	case CollectibleType::Coin:
 		MyGameInstance->collectCoins(item.Value);
@@ -270,16 +269,29 @@ bool ACaptain::tryCollectItem(ACollectibleItem& item) {
 		unlockDoubleJump();
 		break;
 	case CollectibleType::Key:
-		KeysOwned++;
+		MyGameInstance->collectKey();
 		break;
 	case CollectibleType::Map:
+	{
 		MyGameInstance->collectMap();
-		break;
+		TArray<AActor*> exits;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALevelExit::StaticClass(), exits);
+		Cast<ALevelExit>(exits[0])->activate();
+	}
+	break;
 	case CollectibleType::Sword:
-		SwordsOwned += item.Value;
+		MyGameInstance->collectSwords(item.Value);
 		break;
 	}
 	return true;
+}
+
+bool ACaptain::tryUnlock() {
+	if (MyGameInstance->KeysOwned > 0) {
+		MyGameInstance->useKey();
+		return true;
+	}
+	return false;
 }
 
 void ACaptain::unlockDoubleJump() {

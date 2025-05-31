@@ -57,8 +57,12 @@ void ACollectibleItem::spawn(UWorld* world, TSubclassOf<ACollectibleItem> subcla
 		location,
 		FRotator::ZeroRotator
 	);
-	auto force = FVector((float)rand() / RAND_MAX * 2 - 1, 0, 1);
-	force.Normalize();
-	collectibleItem->CapsuleComp->AddImpulse(force * launchForce);
+	if (collectibleItem) {
+		auto force = FVector((float)rand() / RAND_MAX * 2 - 1, 0, 1);
+		force.Normalize();
+		collectibleItem->CapsuleComp->AddImpulse(force * launchForce);
+	} else {
+		UE_LOG(LogTemp, Warning, TEXT("Collectible item spawned null"));
+	}
 }
 

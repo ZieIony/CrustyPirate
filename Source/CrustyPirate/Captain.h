@@ -113,15 +113,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int MaxHitPoints = 100;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int CurrentHitPoints = MaxHitPoints;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int KeysOwned = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int SwordsOwned = 0;
-
 	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate;
 	FTimerHandle stunTimer;
 
@@ -188,6 +179,8 @@ public:
 	void onRestartTimerTimeout();
 
 	bool tryCollectItem(ACollectibleItem& item);
+
+	bool tryUnlock();
 
 	void unlockDoubleJump();
 

@@ -16,12 +16,17 @@ class CRUSTYPIRATE_API ALevelExit : public AActor
 {
 	GENERATED_BODY()
 	
+	bool isActive = false;
+
 public:	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UBoxComponent* BoxComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UPaperFlipbookComponent* DoorFlipbook;
+	UPaperFlipbookComponent* Flipbook;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPaperFlipbook* ActiveFlipbook;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundBase* PlayerEnterSound;
@@ -34,8 +39,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float delayTimeSec = 2;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	bool IsActive = true;
 
 	// Sets default values for this actor's properties
 	ALevelExit();
@@ -59,4 +62,6 @@ public:
 	);
 
 	void onDelayTimerTimeout();
+
+	void activate();
 };

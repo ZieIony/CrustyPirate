@@ -5,7 +5,7 @@
 #include <Kismet/GameplayStatics.h>
 
 void UMyGameInstance::fireOnPlayerInfoChanged() {
-	OnPlayerInfoChangedEvent.Broadcast(PlayerHP, CoinsCollected, DiamondsCollected);
+	OnPlayerInfoChangedEvent.Broadcast(PlayerHP, CoinsCollected, DiamondsCollected, KeysOwned, SwordsOwned);
 }
 
 void UMyGameInstance::setPlayerHP(int newHP) {
@@ -23,12 +23,34 @@ void UMyGameInstance::collectDiamonds(int count) {
 	fireOnPlayerInfoChanged();
 }
 
+void UMyGameInstance::collectKey() {
+	KeysOwned++;
+	fireOnPlayerInfoChanged();
+}
+
+void UMyGameInstance::useKey() {
+	KeysOwned--;
+	fireOnPlayerInfoChanged();
+}
+
+void UMyGameInstance::collectSwords(int count) {
+	SwordsOwned += count;
+	fireOnPlayerInfoChanged();
+}
+
+void UMyGameInstance::useSword() {
+	SwordsOwned--;
+	fireOnPlayerInfoChanged();
+}
+
 void UMyGameInstance::finishLevel() {
 	OnLevelFinishedEvent.Broadcast();
 }
 
 void UMyGameInstance::nextLevel() {
 	CurrentLevelIndex++;
+	KeysOwned = 0;
+	SwordsOwned = 0;
 	UGameplayStatics::OpenLevel(GetWorld(), FName(levels[CurrentLevelIndex]));
 }
 
@@ -42,6 +64,8 @@ void UMyGameInstance::restartGame() {
 	DiamondsCollected = 0;
 	MapsCollected = 0;
 	IsDoubleJumpUnlocked = false;
+	KeysOwned = 0;
+	SwordsOwned = 0;
 
 	fireOnPlayerInfoChanged();
 

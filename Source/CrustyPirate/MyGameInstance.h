@@ -8,7 +8,7 @@
 
 #include "MyGameInstance.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnPlayerInfoChanged, int, Health, int, Coins, int, Diamonds);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FOnPlayerInfoChanged, int, Health, int, Coins, int, Diamonds, int, Keys, int, Swords);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLevelFinished);
 
@@ -24,7 +24,8 @@ class CRUSTYPIRATE_API UMyGameInstance : public UGameInstance
 		FString(TEXT("Level_1")),
 		FString(TEXT("Level_2")),
 		FString(TEXT("Level_3")),
-		FString(TEXT("Level_4"))
+		FString(TEXT("Level_4")),
+		FString(TEXT("Level_5"))
 	};
 	
 public:
@@ -46,6 +47,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	int MapsCollected = 0;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	int KeysOwned = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	int SwordsOwned = 0;
+
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerInfoChanged OnPlayerInfoChangedEvent;
 
@@ -59,6 +66,14 @@ public:
 	void collectCoins(int count);
 
 	void collectDiamonds(int count);
+
+	void collectKey();
+
+	void useKey();
+	
+	void collectSwords(int count);
+
+	void useSword();
 
 	void finishLevel();
 

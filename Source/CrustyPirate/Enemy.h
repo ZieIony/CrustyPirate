@@ -65,6 +65,23 @@ public:
 	UPaperFlipbook* QuestionFlipbook;
 #pragma endregion
 
+#pragma region loot
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ACollectibleItem> LootClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int LootCount = 3;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ACollectibleItem> LootClass2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int LootCount2 = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float LaunchLootForce = 1;
+#pragma endregion
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	ACaptain* FollowTarget;
 
@@ -219,6 +236,8 @@ public:
 	void updateHP(int newHP);
 
 	void takeDamage(int damageAmount, float stunDuration, float stunForce, AActor* otherActor);
+
+	void spawnLoot();
 
 	void onLostInterestTimerTimeout();
 
