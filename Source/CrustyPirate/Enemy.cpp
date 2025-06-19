@@ -64,7 +64,7 @@ void AEnemy::BeginPlay() {
 	DialogueComponent->SetVisibility(false);
 	DialogueComponent->SetLooping(false);
 	DialogueComponent->OnFinishedPlaying.AddDynamic(this, &AEnemy::onDialogueFinishedPlaying);
-	
+
 	updateHP(hitPoints);
 
 	OnAttackOverrideEndDelegate.BindUObject(this, &AEnemy::onAttackOverrideAnimEnd);
@@ -85,7 +85,7 @@ void AEnemy::Tick(float dt) {
 
 			if (fabs(distX) > minDist && canMove) {
 				float dir = distX > 0 ? 1.0f : -1.0f;
-				AddMovementInput({ 1,0,0 }, dir);
+				AddMovementInput({ 1,0,0 }, dir, true);
 				updateDirection(dir);
 				const float LEVEL_HEIGHT_EPSILON = 30;
 				if ((isFacingUpperLedge && (FollowTarget->GetActorLocation().Z > GetActorLocation().Z + LEVEL_HEIGHT_EPSILON)) ||
@@ -98,7 +98,7 @@ void AEnemy::Tick(float dt) {
 			}
 		} else {
 			auto dir = GetActorForwardVector();
-			AddMovementInput(dir, 0.5f);
+			AddMovementInput(dir, 0.5f, true);
 		}
 	}
 }
@@ -177,8 +177,29 @@ void AEnemy::updateDirection(float moveDirection) {
 }
 
 void AEnemy::updateHP(int newHP) {
-	hitPoints = std::max(0, newHP);
-	OnHealthChangedEvent.Broadcast(newHP);
+	int hpToSet = std::max(0, newHP);
+	if (hitPoints != 0 && hpToSet == 0) {
+		canMove = false;
+		canAttack = false;
+
+		GetAnimInstance()->JumpToNode(FName("jumpDie"));
+		EnableAttackCollisionBox(false);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		GetSprite()->SetTranslucentSortPriority(1);
+	} else if (hitPoints == 0 && hpToSet != 0) {
+		canMove = true;
+		canAttack = true;
+
+		GetAnimInstance()->JumpToNode(FName("jumpIdle"));
+		EnableAttackCollisionBox(true);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		GetSprite()->SetTranslucentSortPriority(50);
+	}
+
+	hitPoints = hpToSet;
+	OnHealthChangedEvent.Broadcast(hitPoints);
 }
 
 void AEnemy::takeDamage(int damageAmount, float stunDuration, float stunForce, AActor* otherActor) {
@@ -188,14 +209,6 @@ void AEnemy::takeDamage(int damageAmount, float stunDuration, float stunForce, A
 	updateHP(std::max(0, hitPoints - damageAmount));
 
 	if (hitPoints == 0) {
-		canMove = false;
-		canAttack = false;
-
-		GetAnimInstance()->JumpToNode(FName("jumpDie"));
-		EnableAttackCollisionBox(false);
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-		GetSprite()->SetTranslucentSortPriority(1);
 		playDialogue(DialogueType::DEAD, true);
 		spawnLoot();
 	} else {
@@ -330,4 +343,25 @@ void AEnemy::SpawnRunDust() {
 	if (currentSpeed > maxSpeed / 2) {
 		GetWorld()->SpawnActor<AParticle>(DustClass, GetActorTransform());
 	}
+}
+
+FEnemySaveData AEnemy::getSaveData() {
+	return {
+		.health = hitPoints,
+		.transform = GetActorTransform(),
+		.type = GetClass()
+	};
+}
+
+void AEnemy::setSaveData(FEnemySaveData& saveData) {
+	SetActorTransform(saveData.transform);
+	updateHP(saveData.health);
+}
+
+AEnemy* AEnemy::spawn(UWorld* world, FEnemySaveData& saveData) {
+	FActorSpawnParameters enemySpawnParameters = {};
+	enemySpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	AEnemy* enemy = (AEnemy*)world->SpawnActor(saveData.type, &saveData.transform, enemySpawnParameters);
+	enemy->setSaveData(saveData);
+	return enemy;
 }

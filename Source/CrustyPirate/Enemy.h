@@ -6,6 +6,7 @@
 #include "CoreMinimal.h"
 #include <Delegates/DelegateCombinations.h>
 #include "Particle.h"
+#include "EnemySaveData.h"
 
 #include "Enemy.generated.h"
 
@@ -273,4 +274,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SpawnRunDust();
+
+	FEnemySaveData getSaveData();
+
+	void setSaveData(FEnemySaveData& saveData);
+
+	static AEnemy* spawn(UWorld* world, FEnemySaveData& saveData);
 };

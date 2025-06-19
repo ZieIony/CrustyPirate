@@ -66,3 +66,18 @@ void ACollectibleItem::spawn(UWorld* world, TSubclassOf<ACollectibleItem> subcla
 	}
 }
 
+FCollectibleSaveData ACollectibleItem::getSaveData() {
+	FCollectibleSaveData saveData = {
+		.transform = GetActorTransform(),
+		.type = GetClass()
+	};
+	return saveData;
+}
+
+ACollectibleItem* ACollectibleItem::spawn(UWorld* world, FCollectibleSaveData& saveData) {
+	FActorSpawnParameters collectibleSpawnParameters = {};
+	collectibleSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	ACollectibleItem* collectible = (ACollectibleItem*)world->SpawnActor(saveData.type, &saveData.transform, collectibleSpawnParameters);
+	collectible->SetActorTransform(saveData.transform);
+	return collectible;
+}

@@ -20,6 +20,9 @@ class CRUSTYPIRATE_API UMyGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 
+	static inline FString SAVE_SLOT_NAME = FString("default");
+	static inline int SAVE_SLOT_INDEX = 0;
+
 	static inline std::vector<FString> levels = {
 		FString(TEXT("Level_1")),
 		FString(TEXT("Level_2")),
@@ -84,4 +87,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void restartGame();
+
+	UFUNCTION(BlueprintCallable)
+	void saveGame(bool async);
+
+	UFUNCTION(BlueprintCallable)
+	void loadGame();
 };

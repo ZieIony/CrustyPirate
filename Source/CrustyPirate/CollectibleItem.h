@@ -7,6 +7,7 @@
 #include <PaperFlipbookComponent.h>
 #include <Components/CapsuleComponent.h>
 #include <Sound/SoundBase.h>
+#include "CollectibleSaveData.h"
 
 #include "CollectibleItem.generated.h"
 
@@ -64,4 +65,8 @@ public:
 	);
 
 	static void spawn(UWorld* world, TSubclassOf<ACollectibleItem> subclass, FVector location, float launchForce);
+
+	FCollectibleSaveData getSaveData();
+
+	static ACollectibleItem* spawn(UWorld* world, FCollectibleSaveData& saveData);
 };

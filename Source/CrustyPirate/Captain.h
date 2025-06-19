@@ -14,6 +14,7 @@
 #include <Engine/TimerHandle.h>
 #include <PaperZDAnimInstance.h>
 #include "Bullet.h"
+#include "CaptainSaveData.h"
 
 #include "Captain.generated.h"
 
@@ -68,6 +69,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UInputAction* QuitAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UInputAction* SaveGameAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UInputAction* LoadGameAction;
 #pragma endregion
 
 #pragma region animations
@@ -189,10 +196,18 @@ public:
 
 	void quitGame();
 
+	void saveGame();
+
+	void loadGame();
+
 	void playDialogue(DialogueType type, bool force = true);
 
 	UFUNCTION()
 	void onDialogueFinishedPlaying();
 
 	void onIdleTimerTimeout();
+
+	FCaptainSaveData getSaveData();
+
+	void setSaveData(FCaptainSaveData& saveData);
 };

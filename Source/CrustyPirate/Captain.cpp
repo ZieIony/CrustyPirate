@@ -78,6 +78,8 @@ void ACaptain::SetupPlayerInputComponent(UInputComponent* playerInputComponent) 
 		enhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Canceled, this, &ACaptain::jumpEnded);
 
 		enhancedInputComponent->BindAction(QuitAction, ETriggerEvent::Started, this, &ACaptain::quitGame);
+		enhancedInputComponent->BindAction(SaveGameAction, ETriggerEvent::Started, this, &ACaptain::saveGame);
+		enhancedInputComponent->BindAction(LoadGameAction, ETriggerEvent::Started, this, &ACaptain::loadGame);
 	} else {
 		throw std::exception("enhancedInputComponent is null");
 	}
@@ -206,18 +208,14 @@ void ACaptain::takeDamage(int damageAmount, float stunDuration, float stunForce,
 	updateHP(std::max(0, MyGameInstance->PlayerHP - damageAmount));
 
 	if (MyGameInstance->PlayerHP == 0) {
-		canMove = false;
-		canAttack = false;
-
 		float restartDelay = 3;
 		GetWorldTimerManager().SetTimer(restartTimer, this, &ACaptain::onRestartTimerTimeout, 1, false, restartDelay);
 		GetWorldTimerManager().ClearTimer(idleTimer);
 		playDialogue(DialogueType::DEAD, true);
-		GetAnimInstance()->JumpToNode(FName("JumpDie"), FName("CaptainStateMachine"));
 	} else {
 		stun(stunDuration);
 		playDialogue(DialogueType::EXCLAMATION);
-		GetAnimInstance()->JumpToNode(FName("JumpTakeHit"), FName("CaptainStateMachine"));
+		GetAnimInstance()->JumpToNode(FName("jumpTakeHit"));
 
 		auto direction = GetActorLocation().X - otherActor->GetActorLocation().X;
 		auto stunImpulse = FVector(direction, 0, abs(direction));
@@ -228,6 +226,18 @@ void ACaptain::takeDamage(int damageAmount, float stunDuration, float stunForce,
 }
 
 void ACaptain::updateHP(int newHP) {
+	if (MyGameInstance->PlayerHP != 0 && newHP == 0) {
+		canMove = false;
+		canAttack = false;
+
+		GetAnimInstance()->JumpToNode(FName("jumpDie"));
+	} else if (MyGameInstance->PlayerHP == 0 && newHP != 0) {
+		canMove = true;
+		canAttack = true;
+
+		GetAnimInstance()->JumpToNode(FName("jumpIdle"));
+	}
+
 	MyGameInstance->setPlayerHP(newHP);
 }
 
@@ -313,6 +323,14 @@ void ACaptain::quitGame() {
 	UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Quit, false);
 }
 
+void ACaptain::saveGame() {
+	MyGameInstance->saveGame(false);
+}
+
+void ACaptain::loadGame() {
+	MyGameInstance->loadGame();
+}
+
 void ACaptain::playDialogue(DialogueType type, bool force) {
 	if ((!force && DialogueComponent->IsVisible()) || (!getIsAlive() && type != DialogueType::DEAD))
 		return;
@@ -334,4 +352,14 @@ void ACaptain::onDialogueFinishedPlaying() {
 
 void ACaptain::onIdleTimerTimeout() {
 	playDialogue(DialogueType::QUESTION);
+}
+
+FCaptainSaveData ACaptain::getSaveData() {
+	return {
+		.transform = GetActorTransform()
+	};
+}
+
+void ACaptain::setSaveData(FCaptainSaveData& saveData) {
+	SetActorTransform(saveData.transform);
 }
